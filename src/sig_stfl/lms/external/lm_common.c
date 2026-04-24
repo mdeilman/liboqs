@@ -10,14 +10,21 @@
 #include "lm_ots_common.h"
 
 /*
- * Internal utility to convert encoded parameter sets into what they represent
+ * Internal utility to convert encoded parameter sets into what they represent.
+ *
+ * RFC 8554, Table 2  - original SHA-256/256 parameter sets
+ * RFC 9858, Table 2  - SHA-256/192, SHAKE256/256, SHAKE256/192 parameter sets
+ *
+ * Parameters: h=hash_type, n=hash_output_bytes, height=tree_height
  */
 bool lm_look_up_parameter_set(param_set_t parameter_set,
      unsigned *h, unsigned *n, unsigned *height) {
     unsigned v_h, v_n, v_height;
     switch (parameter_set) {
+
+    /* --- RFC 8554: SHA-256/256 --- */
     case LMS_SHA256_N32_H5:
-        v_h = HASH_SHA256; v_n = 32; v_height = 5; break;
+        v_h = HASH_SHA256; v_n = 32; v_height = 5;  break;
     case LMS_SHA256_N32_H10:
         v_h = HASH_SHA256; v_n = 32; v_height = 10; break;
     case LMS_SHA256_N32_H15:
@@ -26,6 +33,43 @@ bool lm_look_up_parameter_set(param_set_t parameter_set,
         v_h = HASH_SHA256; v_n = 32; v_height = 20; break;
     case LMS_SHA256_N32_H25:
         v_h = HASH_SHA256; v_n = 32; v_height = 25; break;
+
+    /* --- RFC 9858: SHA-256/192 (truncated SHA-256, 24-byte output) --- */
+    case LMS_SHA256_N24_H5:
+        v_h = HASH_SHA256_N24; v_n = 24; v_height = 5;  break;
+    case LMS_SHA256_N24_H10:
+        v_h = HASH_SHA256_N24; v_n = 24; v_height = 10; break;
+    case LMS_SHA256_N24_H15:
+        v_h = HASH_SHA256_N24; v_n = 24; v_height = 15; break;
+    case LMS_SHA256_N24_H20:
+        v_h = HASH_SHA256_N24; v_n = 24; v_height = 20; break;
+    case LMS_SHA256_N24_H25:
+        v_h = HASH_SHA256_N24; v_n = 24; v_height = 25; break;
+
+    /* --- RFC 9858: SHAKE256/256 (32-byte output) --- */
+    case LMS_SHAKE_N32_H5:
+        v_h = HASH_SHAKE256_N32; v_n = 32; v_height = 5;  break;
+    case LMS_SHAKE_N32_H10:
+        v_h = HASH_SHAKE256_N32; v_n = 32; v_height = 10; break;
+    case LMS_SHAKE_N32_H15:
+        v_h = HASH_SHAKE256_N32; v_n = 32; v_height = 15; break;
+    case LMS_SHAKE_N32_H20:
+        v_h = HASH_SHAKE256_N32; v_n = 32; v_height = 20; break;
+    case LMS_SHAKE_N32_H25:
+        v_h = HASH_SHAKE256_N32; v_n = 32; v_height = 25; break;
+
+    /* --- RFC 9858: SHAKE256/192 (24-byte output) --- */
+    case LMS_SHAKE_N24_H5:
+        v_h = HASH_SHAKE256_N24; v_n = 24; v_height = 5;  break;
+    case LMS_SHAKE_N24_H10:
+        v_h = HASH_SHAKE256_N24; v_n = 24; v_height = 10; break;
+    case LMS_SHAKE_N24_H15:
+        v_h = HASH_SHAKE256_N24; v_n = 24; v_height = 15; break;
+    case LMS_SHAKE_N24_H20:
+        v_h = HASH_SHAKE256_N24; v_n = 24; v_height = 20; break;
+    case LMS_SHAKE_N24_H25:
+        v_h = HASH_SHAKE256_N24; v_n = 24; v_height = 25; break;
+
     default: return false;
     }
 

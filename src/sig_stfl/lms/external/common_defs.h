@@ -11,6 +11,11 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <oqs/oqs.h>
+
+/*
+ * MAX_HASH is the length of the largest hash output we support.
+ * SHAKE256/256 and SHA-256 both produce 32 bytes; the N24 variants produce 24.
+ */
 #define MAX_HASH   32 /* Length of the largest hash we support */
 
 /* The I (Merkle tree identifier) value is 16 bytes long */
@@ -56,18 +61,63 @@ typedef uint_fast32_t param_set_t;
     /* to do more) */
 typedef uint_fast64_t sequence_t;
 
-/* Defined LM parameter sets */
+/* -----------------------------------------------------------------------
+ * LM-OTS parameter set identifiers
+ * RFC 8554, Table 1 - SHA-256/256 (original)
+ * ----------------------------------------------------------------------- */
+#define LMOTS_SHA256_N32_W1 0x00000001
+#define LMOTS_SHA256_N32_W2 0x00000002
+#define LMOTS_SHA256_N32_W4 0x00000003
+#define LMOTS_SHA256_N32_W8 0x00000004
+
+/* RFC 9858 (draft-fluhrer-lms-more-parm-sets) - SHA-256/192 */
+#define LMOTS_SHA256_N24_W1 0x00000005
+#define LMOTS_SHA256_N24_W2 0x00000006
+#define LMOTS_SHA256_N24_W4 0x00000007
+#define LMOTS_SHA256_N24_W8 0x00000008
+
+/* RFC 9858 - SHAKE256/256 */
+#define LMOTS_SHAKE_N32_W1  0x00000009
+#define LMOTS_SHAKE_N32_W2  0x0000000a
+#define LMOTS_SHAKE_N32_W4  0x0000000b
+#define LMOTS_SHAKE_N32_W8  0x0000000c
+
+/* RFC 9858 - SHAKE256/192 */
+#define LMOTS_SHAKE_N24_W1  0x0000000d
+#define LMOTS_SHAKE_N24_W2  0x0000000e
+#define LMOTS_SHAKE_N24_W4  0x0000000f
+#define LMOTS_SHAKE_N24_W8  0x00000010
+
+/* -----------------------------------------------------------------------
+ * LMS parameter set identifiers
+ * RFC 8554, Table 2 - SHA-256/256 (original)
+ * ----------------------------------------------------------------------- */
 #define LMS_SHA256_N32_H5  0x00000005
 #define LMS_SHA256_N32_H10 0x00000006
 #define LMS_SHA256_N32_H15 0x00000007
 #define LMS_SHA256_N32_H20 0x00000008
 #define LMS_SHA256_N32_H25 0x00000009
 
-/* LM-OTS registry */
-#define LMOTS_SHA256_N32_W1 0x00000001
-#define LMOTS_SHA256_N32_W2 0x00000002
-#define LMOTS_SHA256_N32_W4 0x00000003
-#define LMOTS_SHA256_N32_W8 0x00000004
+/* RFC 9858 - SHA-256/192 */
+#define LMS_SHA256_N24_H5  0x0000000a
+#define LMS_SHA256_N24_H10 0x0000000b
+#define LMS_SHA256_N24_H15 0x0000000c
+#define LMS_SHA256_N24_H20 0x0000000d
+#define LMS_SHA256_N24_H25 0x0000000e
+
+/* RFC 9858 - SHAKE256/256 */
+#define LMS_SHAKE_N32_H5   0x0000000f
+#define LMS_SHAKE_N32_H10  0x00000010
+#define LMS_SHAKE_N32_H15  0x00000011
+#define LMS_SHAKE_N32_H20  0x00000012
+#define LMS_SHAKE_N32_H25  0x00000013
+
+/* RFC 9858 - SHAKE256/192 */
+#define LMS_SHAKE_N24_H5   0x00000014
+#define LMS_SHAKE_N24_H10  0x00000015
+#define LMS_SHAKE_N24_H15  0x00000016
+#define LMS_SHAKE_N24_H20  0x00000017
+#define LMS_SHAKE_N24_H25  0x00000018
 
 /* Supported LMS / LM-OTS parameter-set identifiers (must stay in sync with #defines above) */
 #define OQS_LMS_TYPE_LIST_LEN 5u

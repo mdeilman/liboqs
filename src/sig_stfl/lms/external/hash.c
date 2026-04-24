@@ -9,19 +9,16 @@
 
 /*
  * This is the file that implements the hashing APIs we use internally.
- * At the present, our parameter sets support only one hash function
- * (SHA-256, using full 256 bit output), however, that is likely to change
- * in the future
+ * Parameter sets supported:
+ *   HASH_SHA256      - SHA-256, full 32-byte output (RFC 8554)
+ *   HASH_SHA256_N24  - SHA-256 truncated to 24 bytes (RFC 9858 / SP 800-208)
+ *   HASH_SHAKE256_N32 - SHAKE256 squeezed to 32 bytes (RFC 9858 / SP 800-208)
+ *   HASH_SHAKE256_N24 - SHAKE256 squeezed to 24 bytes (RFC 9858 / SP 800-208)
  */
 
 #if ALLOW_VERBOSE
 #include <stdio.h>
 #include <stdbool.h>
-/*
- * Debugging flag; if this is set, we chat about what we're hashing, and what
- * the result is it's useful when debugging; however we probably don't want to
- * do this if we're multithreaded...
- */
 bool hss_verbose = false;
 #endif
 
@@ -50,6 +47,33 @@ void hss_hash_ctx(void *result, int hash_type, union hash_context *ctx,
 #endif
         break;
     }
+    case HASH_SHA256_N24: {
+        /* SHA-256 truncated to 192 bits: compute full SHA-256, copy first 24 bytes */
+        unsigned char tmp[32];
+        OQS_SHA2_sha256_inc_init(&ctx->sha256);
+        OQS_SHA2_sha256_inc(&ctx->sha256, message, message_len);
+        SHA256_Final(tmp, &ctx->sha256);
+        memcpy(result, tmp, 24);
+        break;
+    }
+    case HASH_SHAKE256_N32: {
+        /* SHAKE256/256: absorb message, squeeze 32 bytes */
+        OQS_SHA3_shake256_inc_init(&ctx->shake256);
+        OQS_SHA3_shake256_inc_absorb(&ctx->shake256, message, message_len);
+        OQS_SHA3_shake256_inc_finalize(&ctx->shake256);
+        OQS_SHA3_shake256_inc_squeeze(result, 32, &ctx->shake256);
+        OQS_SHA3_shake256_inc_ctx_release(&ctx->shake256);
+        break;
+    }
+    case HASH_SHAKE256_N24: {
+        /* SHAKE256/192: absorb message, squeeze 24 bytes */
+        OQS_SHA3_shake256_inc_init(&ctx->shake256);
+        OQS_SHA3_shake256_inc_absorb(&ctx->shake256, message, message_len);
+        OQS_SHA3_shake256_inc_finalize(&ctx->shake256);
+        OQS_SHA3_shake256_inc_squeeze(result, 24, &ctx->shake256);
+        OQS_SHA3_shake256_inc_ctx_release(&ctx->shake256);
+        break;
+    }
     }
 }
 
@@ -62,14 +86,17 @@ void hss_hash(void *result, int hash_type,
 
 
 /*
- * This provides an API to do incremental hashing.  We use it when hashing the
- * message; since we don't know how long it could be, we don't want to
- * allocate a buffer that's long enough for that, plus the decoration we add
+ * Incremental hashing API - used when hashing the message in chunks
  */
 void hss_init_hash_context(int h, union hash_context *ctx) {
     switch (h) {
     case HASH_SHA256:
-        OQS_SHA2_sha256_inc_init( &ctx->sha256 );
+    case HASH_SHA256_N24:
+        OQS_SHA2_sha256_inc_init(&ctx->sha256);
+        break;
+    case HASH_SHAKE256_N32:
+    case HASH_SHAKE256_N24:
+        OQS_SHA3_shake256_inc_init(&ctx->shake256);
         break;
     }
 }
@@ -83,22 +110,45 @@ void hss_update_hash_context(int h, union hash_context *ctx,
 #endif
     switch (h) {
     case HASH_SHA256:
+    case HASH_SHA256_N24:
         OQS_SHA2_sha256_inc(&ctx->sha256, msg, len_msg);
+        break;
+    case HASH_SHAKE256_N32:
+    case HASH_SHAKE256_N24:
+        OQS_SHA3_shake256_inc_absorb(&ctx->shake256, msg, len_msg);
         break;
     }
 }
 
 void hss_finalize_hash_context(int h, union hash_context *ctx, void *buffer) {
     switch (h) {
-    case HASH_SHA256:
+    case HASH_SHA256: {
         SHA256_Final(buffer, &ctx->sha256);
 #if ALLOW_VERBOSE
-    if (hss_verbose) {
-        printf( " -->" );
-        int i; for (i=0; i<32; i++) printf( " %02x", ((unsigned char*)buffer)[i] );
-        printf( "\n" );
-    }
+        if (hss_verbose) {
+            printf( " -->" );
+            int i; for (i=0; i<32; i++) printf( " %02x", ((unsigned char*)buffer)[i] );
+            printf( "\n" );
+        }
 #endif
+        break;
+    }
+    case HASH_SHA256_N24: {
+        /* Full SHA-256, then truncate to 24 bytes */
+        unsigned char tmp[32];
+        SHA256_Final(tmp, &ctx->sha256);
+        memcpy(buffer, tmp, 24);
+        break;
+    }
+    case HASH_SHAKE256_N32:
+        OQS_SHA3_shake256_inc_finalize(&ctx->shake256);
+        OQS_SHA3_shake256_inc_squeeze(buffer, 32, &ctx->shake256);
+        OQS_SHA3_shake256_inc_ctx_release(&ctx->shake256);
+        break;
+    case HASH_SHAKE256_N24:
+        OQS_SHA3_shake256_inc_finalize(&ctx->shake256);
+        OQS_SHA3_shake256_inc_squeeze(buffer, 24, &ctx->shake256);
+        OQS_SHA3_shake256_inc_ctx_release(&ctx->shake256);
         break;
     }
 }
@@ -106,18 +156,24 @@ void hss_finalize_hash_context(int h, union hash_context *ctx, void *buffer) {
 
 unsigned hss_hash_length(int hash_type) {
     switch (hash_type) {
-    case HASH_SHA256: return 32;
+    case HASH_SHA256:      return 32;
+    case HASH_SHA256_N24:  return 24;
+    case HASH_SHAKE256_N32: return 32;
+    case HASH_SHAKE256_N24: return 24;
     }
     return 0;
 }
 
 unsigned hss_hash_blocksize(int hash_type) {
     switch (hash_type) {
-    case HASH_SHA256: return 64;
+    case HASH_SHA256:      return 64;
+    case HASH_SHA256_N24:  return 64;   /* Same underlying function as SHA-256 */
+    case HASH_SHAKE256_N32: return 136; /* SHAKE256 rate = 1088 bits = 136 bytes */
+    case HASH_SHAKE256_N24: return 136;
     }
     return 0;
 }
 
 void SHA256_Final(unsigned char *output, OQS_SHA2_sha256_ctx *ctx) {
-    OQS_SHA2_sha256_inc_finalize(output, ctx,  NULL, 0);
+    OQS_SHA2_sha256_inc_finalize(output, ctx, NULL, 0);
 }

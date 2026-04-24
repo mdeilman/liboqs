@@ -27,6 +27,71 @@ OQS_STATUS OQS_SIG_STFL_alg_lms_sha256_h25_w2_keypair(uint8_t *public_key, OQS_S
 OQS_STATUS OQS_SIG_STFL_alg_lms_sha256_h25_w4_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
 OQS_STATUS OQS_SIG_STFL_alg_lms_sha256_h25_w8_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
 
+/* ----- RFC 9858 / SP 800-208 forward declarations (auto-generated) ----- */
+/* SHA-256/192 */
+OQS_STATUS OQS_SIG_STFL_alg_lms_sha256_n24_h5_w1_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_sha256_n24_h5_w2_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_sha256_n24_h5_w4_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_sha256_n24_h5_w8_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_sha256_n24_h10_w1_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_sha256_n24_h10_w2_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_sha256_n24_h10_w4_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_sha256_n24_h10_w8_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_sha256_n24_h15_w1_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_sha256_n24_h15_w2_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_sha256_n24_h15_w4_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_sha256_n24_h15_w8_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_sha256_n24_h20_w1_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_sha256_n24_h20_w2_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_sha256_n24_h20_w4_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_sha256_n24_h20_w8_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_sha256_n24_h25_w1_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_sha256_n24_h25_w2_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_sha256_n24_h25_w4_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_sha256_n24_h25_w8_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+/* SHAKE256/256 */
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n32_h5_w1_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n32_h5_w2_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n32_h5_w4_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n32_h5_w8_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n32_h10_w1_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n32_h10_w2_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n32_h10_w4_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n32_h10_w8_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n32_h15_w1_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n32_h15_w2_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n32_h15_w4_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n32_h15_w8_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n32_h20_w1_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n32_h20_w2_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n32_h20_w4_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n32_h20_w8_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n32_h25_w1_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n32_h25_w2_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n32_h25_w4_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n32_h25_w8_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+/* SHAKE256/192 */
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n24_h5_w1_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n24_h5_w2_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n24_h5_w4_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n24_h5_w8_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n24_h10_w1_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n24_h10_w2_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n24_h10_w4_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n24_h10_w8_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n24_h15_w1_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n24_h15_w2_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n24_h15_w4_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n24_h15_w8_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n24_h20_w1_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n24_h20_w2_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n24_h20_w4_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n24_h20_w8_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n24_h25_w1_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n24_h25_w2_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n24_h25_w4_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+OQS_STATUS OQS_SIG_STFL_alg_lms_shake_n24_h25_w8_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
+
 OQS_STATUS OQS_SIG_STFL_alg_lms_sha256_h5_w1_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
 OQS_STATUS OQS_SIG_STFL_alg_lms_sha256_h5_w2_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
 OQS_STATUS OQS_SIG_STFL_alg_lms_sha256_h5_w4_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key);
@@ -82,7 +147,7 @@ OQS_SIG_STFL *OQS_SIG_STFL_alg_lms_##lms_variant##_new(void) { \
         sig->euf_cma = true; \
         sig->suf_cma = false; \
 \
-        sig->length_public_key = OQS_SIG_STFL_alg_lms_length_public_key; \
+        sig->length_public_key = OQS_SIG_STFL_alg_lms_##lms_variant##_length_pk; \
         sig->length_secret_key = OQS_SIG_STFL_alg_lms_length_private_key; \
         sig->length_signature = OQS_SIG_STFL_alg_lms_##lms_variant##_length_signature; \
 \
@@ -207,6 +272,131 @@ LMS_ALG(sha256_h25_w4, SHA256_H25_W4)
 // ======================== LMS-SHA256 H25/W8 ======================== //
 
 LMS_ALG(sha256_h25_w8, SHA256_H25_W8)
+
+/* ----- RFC 9858 / SP 800-208 LMS_ALG instantiations (auto-generated) ----- */
+/* SHA-256/192 */
+LMS_ALG(sha256_n24_h5_w1, SHA256_N24_H5_W1)
+
+LMS_ALG(sha256_n24_h5_w2, SHA256_N24_H5_W2)
+
+LMS_ALG(sha256_n24_h5_w4, SHA256_N24_H5_W4)
+
+LMS_ALG(sha256_n24_h5_w8, SHA256_N24_H5_W8)
+
+LMS_ALG(sha256_n24_h10_w1, SHA256_N24_H10_W1)
+
+LMS_ALG(sha256_n24_h10_w2, SHA256_N24_H10_W2)
+
+LMS_ALG(sha256_n24_h10_w4, SHA256_N24_H10_W4)
+
+LMS_ALG(sha256_n24_h10_w8, SHA256_N24_H10_W8)
+
+LMS_ALG(sha256_n24_h15_w1, SHA256_N24_H15_W1)
+
+LMS_ALG(sha256_n24_h15_w2, SHA256_N24_H15_W2)
+
+LMS_ALG(sha256_n24_h15_w4, SHA256_N24_H15_W4)
+
+LMS_ALG(sha256_n24_h15_w8, SHA256_N24_H15_W8)
+
+LMS_ALG(sha256_n24_h20_w1, SHA256_N24_H20_W1)
+
+LMS_ALG(sha256_n24_h20_w2, SHA256_N24_H20_W2)
+
+LMS_ALG(sha256_n24_h20_w4, SHA256_N24_H20_W4)
+
+LMS_ALG(sha256_n24_h20_w8, SHA256_N24_H20_W8)
+
+LMS_ALG(sha256_n24_h25_w1, SHA256_N24_H25_W1)
+
+LMS_ALG(sha256_n24_h25_w2, SHA256_N24_H25_W2)
+
+LMS_ALG(sha256_n24_h25_w4, SHA256_N24_H25_W4)
+
+LMS_ALG(sha256_n24_h25_w8, SHA256_N24_H25_W8)
+
+/* SHAKE256/256 */
+LMS_ALG(shake_n32_h5_w1, SHAKE_N32_H5_W1)
+
+LMS_ALG(shake_n32_h5_w2, SHAKE_N32_H5_W2)
+
+LMS_ALG(shake_n32_h5_w4, SHAKE_N32_H5_W4)
+
+LMS_ALG(shake_n32_h5_w8, SHAKE_N32_H5_W8)
+
+LMS_ALG(shake_n32_h10_w1, SHAKE_N32_H10_W1)
+
+LMS_ALG(shake_n32_h10_w2, SHAKE_N32_H10_W2)
+
+LMS_ALG(shake_n32_h10_w4, SHAKE_N32_H10_W4)
+
+LMS_ALG(shake_n32_h10_w8, SHAKE_N32_H10_W8)
+
+LMS_ALG(shake_n32_h15_w1, SHAKE_N32_H15_W1)
+
+LMS_ALG(shake_n32_h15_w2, SHAKE_N32_H15_W2)
+
+LMS_ALG(shake_n32_h15_w4, SHAKE_N32_H15_W4)
+
+LMS_ALG(shake_n32_h15_w8, SHAKE_N32_H15_W8)
+
+LMS_ALG(shake_n32_h20_w1, SHAKE_N32_H20_W1)
+
+LMS_ALG(shake_n32_h20_w2, SHAKE_N32_H20_W2)
+
+LMS_ALG(shake_n32_h20_w4, SHAKE_N32_H20_W4)
+
+LMS_ALG(shake_n32_h20_w8, SHAKE_N32_H20_W8)
+
+LMS_ALG(shake_n32_h25_w1, SHAKE_N32_H25_W1)
+
+LMS_ALG(shake_n32_h25_w2, SHAKE_N32_H25_W2)
+
+LMS_ALG(shake_n32_h25_w4, SHAKE_N32_H25_W4)
+
+LMS_ALG(shake_n32_h25_w8, SHAKE_N32_H25_W8)
+
+/* SHAKE256/192 */
+LMS_ALG(shake_n24_h5_w1, SHAKE_N24_H5_W1)
+
+LMS_ALG(shake_n24_h5_w2, SHAKE_N24_H5_W2)
+
+LMS_ALG(shake_n24_h5_w4, SHAKE_N24_H5_W4)
+
+LMS_ALG(shake_n24_h5_w8, SHAKE_N24_H5_W8)
+
+LMS_ALG(shake_n24_h10_w1, SHAKE_N24_H10_W1)
+
+LMS_ALG(shake_n24_h10_w2, SHAKE_N24_H10_W2)
+
+LMS_ALG(shake_n24_h10_w4, SHAKE_N24_H10_W4)
+
+LMS_ALG(shake_n24_h10_w8, SHAKE_N24_H10_W8)
+
+LMS_ALG(shake_n24_h15_w1, SHAKE_N24_H15_W1)
+
+LMS_ALG(shake_n24_h15_w2, SHAKE_N24_H15_W2)
+
+LMS_ALG(shake_n24_h15_w4, SHAKE_N24_H15_W4)
+
+LMS_ALG(shake_n24_h15_w8, SHAKE_N24_H15_W8)
+
+LMS_ALG(shake_n24_h20_w1, SHAKE_N24_H20_W1)
+
+LMS_ALG(shake_n24_h20_w2, SHAKE_N24_H20_W2)
+
+LMS_ALG(shake_n24_h20_w4, SHAKE_N24_H20_W4)
+
+LMS_ALG(shake_n24_h20_w8, SHAKE_N24_H20_W8)
+
+LMS_ALG(shake_n24_h25_w1, SHAKE_N24_H25_W1)
+
+LMS_ALG(shake_n24_h25_w2, SHAKE_N24_H25_W2)
+
+LMS_ALG(shake_n24_h25_w4, SHAKE_N24_H25_W4)
+
+LMS_ALG(shake_n24_h25_w8, SHAKE_N24_H25_W8)
+
 
 //
 //2-Level LMS

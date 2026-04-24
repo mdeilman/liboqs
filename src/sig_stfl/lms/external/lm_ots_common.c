@@ -9,20 +9,59 @@
 
 /*
  * Convert the external name of a parameter set into the set of values we care
- * about
+ * about.
+ *
+ * RFC 8554, Table 1  - original SHA-256/256 parameter sets
+ * RFC 9858, Table 1  - SHA-256/192, SHAKE256/256, SHAKE256/192 parameter sets
+ *
+ * Parameters: h=hash_type, n=hash_output_bytes, w=Winternitz_width,
+ *             p=num_hash_elements, ls=left_shift_for_checksum
  */
 bool lm_ots_look_up_parameter_set(param_set_t parameter_set,
      unsigned *h, unsigned *n, unsigned *w, unsigned *p, unsigned *ls) {
     unsigned v_h, v_n, v_w, v_p, v_ls;
     switch (parameter_set) {
+
+    /* --- RFC 8554: SHA-256/256 --- */
     case LMOTS_SHA256_N32_W1:
         v_h = HASH_SHA256; v_n = 32; v_w = 1; v_p = 265; v_ls = 7; break;
     case LMOTS_SHA256_N32_W2:
         v_h = HASH_SHA256; v_n = 32; v_w = 2; v_p = 133; v_ls = 6; break;
     case LMOTS_SHA256_N32_W4:
-        v_h = HASH_SHA256; v_n = 32; v_w = 4; v_p = 67; v_ls = 4; break;
+        v_h = HASH_SHA256; v_n = 32; v_w = 4; v_p = 67;  v_ls = 4; break;
     case LMOTS_SHA256_N32_W8:
-        v_h = HASH_SHA256; v_n = 32; v_w = 8; v_p = 34; v_ls = 0; break;
+        v_h = HASH_SHA256; v_n = 32; v_w = 8; v_p = 34;  v_ls = 0; break;
+
+    /* --- RFC 9858: SHA-256/192 (truncated SHA-256, 24-byte output) --- */
+    case LMOTS_SHA256_N24_W1:
+        v_h = HASH_SHA256_N24; v_n = 24; v_w = 1; v_p = 200; v_ls = 8; break;
+    case LMOTS_SHA256_N24_W2:
+        v_h = HASH_SHA256_N24; v_n = 24; v_w = 2; v_p = 101; v_ls = 6; break;
+    case LMOTS_SHA256_N24_W4:
+        v_h = HASH_SHA256_N24; v_n = 24; v_w = 4; v_p = 51;  v_ls = 4; break;
+    case LMOTS_SHA256_N24_W8:
+        v_h = HASH_SHA256_N24; v_n = 24; v_w = 8; v_p = 26;  v_ls = 0; break;
+
+    /* --- RFC 9858: SHAKE256/256 (32-byte output) --- */
+    case LMOTS_SHAKE_N32_W1:
+        v_h = HASH_SHAKE256_N32; v_n = 32; v_w = 1; v_p = 265; v_ls = 7; break;
+    case LMOTS_SHAKE_N32_W2:
+        v_h = HASH_SHAKE256_N32; v_n = 32; v_w = 2; v_p = 133; v_ls = 6; break;
+    case LMOTS_SHAKE_N32_W4:
+        v_h = HASH_SHAKE256_N32; v_n = 32; v_w = 4; v_p = 67;  v_ls = 4; break;
+    case LMOTS_SHAKE_N32_W8:
+        v_h = HASH_SHAKE256_N32; v_n = 32; v_w = 8; v_p = 34;  v_ls = 0; break;
+
+    /* --- RFC 9858: SHAKE256/192 (24-byte output) --- */
+    case LMOTS_SHAKE_N24_W1:
+        v_h = HASH_SHAKE256_N24; v_n = 24; v_w = 1; v_p = 200; v_ls = 8; break;
+    case LMOTS_SHAKE_N24_W2:
+        v_h = HASH_SHAKE256_N24; v_n = 24; v_w = 2; v_p = 101; v_ls = 6; break;
+    case LMOTS_SHAKE_N24_W4:
+        v_h = HASH_SHAKE256_N24; v_n = 24; v_w = 4; v_p = 51;  v_ls = 4; break;
+    case LMOTS_SHAKE_N24_W8:
+        v_h = HASH_SHAKE256_N24; v_n = 24; v_w = 8; v_p = 26;  v_ls = 0; break;
+
     default: return false;
     }
 

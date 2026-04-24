@@ -13,7 +13,7 @@
  * this subsystem.  It should not be used by applications
  */
 
-#define PARAM_SET_COMPRESS_LEN 1  /* We assume that we can compress the */
+#define PARAM_SET_COMPRESS_LEN 2  /* We assume that we can compress the */
                                   /* lm_type and the lm_ots type for a */
                                   /* single level into 1 byte */
 

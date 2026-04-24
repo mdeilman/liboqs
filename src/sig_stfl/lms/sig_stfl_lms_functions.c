@@ -243,7 +243,7 @@ int oqs_sig_stfl_lms_keypair(uint8_t *pk, OQS_SIG_STFL_SECRET_KEY *sk, const uin
 	bool b_ret;
 	int parse_err = 0;
 
-	size_t len_public_key = 60;
+	size_t len_public_key = 0;
 	oqs_lms_key_data *oqs_key_data = NULL;
 
 	if (!pk || !sk || !oid) {
@@ -377,6 +377,251 @@ int oqs_sig_stfl_lms_keypair(uint8_t *pk, OQS_SIG_STFL_SECRET_KEY *sk, const uin
 		oqs_key_data->lm_type[0] = LMS_SHA256_N32_H25;
 		oqs_key_data->lm_ots_type[0] = LMOTS_SHA256_N32_W8;
 		break;
+
+        /* ----- RFC 9858 / SP 800-208 single-tree cases (auto-generated) ----- */
+        /* SHA-256/192 */
+        case OQS_LMS_ID_sha256_n24_h5_w1:
+            oqs_key_data->lm_type[0]     = LMS_SHA256_N24_H5;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHA256_N24_W1;
+            break;
+        case OQS_LMS_ID_sha256_n24_h5_w2:
+            oqs_key_data->lm_type[0]     = LMS_SHA256_N24_H5;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHA256_N24_W2;
+            break;
+        case OQS_LMS_ID_sha256_n24_h5_w4:
+            oqs_key_data->lm_type[0]     = LMS_SHA256_N24_H5;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHA256_N24_W4;
+            break;
+        case OQS_LMS_ID_sha256_n24_h5_w8:
+            oqs_key_data->lm_type[0]     = LMS_SHA256_N24_H5;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHA256_N24_W8;
+            break;
+        case OQS_LMS_ID_sha256_n24_h10_w1:
+            oqs_key_data->lm_type[0]     = LMS_SHA256_N24_H10;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHA256_N24_W1;
+            break;
+        case OQS_LMS_ID_sha256_n24_h10_w2:
+            oqs_key_data->lm_type[0]     = LMS_SHA256_N24_H10;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHA256_N24_W2;
+            break;
+        case OQS_LMS_ID_sha256_n24_h10_w4:
+            oqs_key_data->lm_type[0]     = LMS_SHA256_N24_H10;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHA256_N24_W4;
+            break;
+        case OQS_LMS_ID_sha256_n24_h10_w8:
+            oqs_key_data->lm_type[0]     = LMS_SHA256_N24_H10;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHA256_N24_W8;
+            break;
+        case OQS_LMS_ID_sha256_n24_h15_w1:
+            oqs_key_data->lm_type[0]     = LMS_SHA256_N24_H15;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHA256_N24_W1;
+            break;
+        case OQS_LMS_ID_sha256_n24_h15_w2:
+            oqs_key_data->lm_type[0]     = LMS_SHA256_N24_H15;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHA256_N24_W2;
+            break;
+        case OQS_LMS_ID_sha256_n24_h15_w4:
+            oqs_key_data->lm_type[0]     = LMS_SHA256_N24_H15;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHA256_N24_W4;
+            break;
+        case OQS_LMS_ID_sha256_n24_h15_w8:
+            oqs_key_data->lm_type[0]     = LMS_SHA256_N24_H15;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHA256_N24_W8;
+            break;
+        case OQS_LMS_ID_sha256_n24_h20_w1:
+            oqs_key_data->lm_type[0]     = LMS_SHA256_N24_H20;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHA256_N24_W1;
+            break;
+        case OQS_LMS_ID_sha256_n24_h20_w2:
+            oqs_key_data->lm_type[0]     = LMS_SHA256_N24_H20;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHA256_N24_W2;
+            break;
+        case OQS_LMS_ID_sha256_n24_h20_w4:
+            oqs_key_data->lm_type[0]     = LMS_SHA256_N24_H20;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHA256_N24_W4;
+            break;
+        case OQS_LMS_ID_sha256_n24_h20_w8:
+            oqs_key_data->lm_type[0]     = LMS_SHA256_N24_H20;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHA256_N24_W8;
+            break;
+        case OQS_LMS_ID_sha256_n24_h25_w1:
+            oqs_key_data->lm_type[0]     = LMS_SHA256_N24_H25;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHA256_N24_W1;
+            break;
+        case OQS_LMS_ID_sha256_n24_h25_w2:
+            oqs_key_data->lm_type[0]     = LMS_SHA256_N24_H25;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHA256_N24_W2;
+            break;
+        case OQS_LMS_ID_sha256_n24_h25_w4:
+            oqs_key_data->lm_type[0]     = LMS_SHA256_N24_H25;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHA256_N24_W4;
+            break;
+        case OQS_LMS_ID_sha256_n24_h25_w8:
+            oqs_key_data->lm_type[0]     = LMS_SHA256_N24_H25;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHA256_N24_W8;
+            break;
+        /* SHAKE256/256 */
+        case OQS_LMS_ID_shake_n32_h5_w1:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N32_H5;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N32_W1;
+            break;
+        case OQS_LMS_ID_shake_n32_h5_w2:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N32_H5;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N32_W2;
+            break;
+        case OQS_LMS_ID_shake_n32_h5_w4:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N32_H5;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N32_W4;
+            break;
+        case OQS_LMS_ID_shake_n32_h5_w8:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N32_H5;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N32_W8;
+            break;
+        case OQS_LMS_ID_shake_n32_h10_w1:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N32_H10;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N32_W1;
+            break;
+        case OQS_LMS_ID_shake_n32_h10_w2:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N32_H10;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N32_W2;
+            break;
+        case OQS_LMS_ID_shake_n32_h10_w4:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N32_H10;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N32_W4;
+            break;
+        case OQS_LMS_ID_shake_n32_h10_w8:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N32_H10;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N32_W8;
+            break;
+        case OQS_LMS_ID_shake_n32_h15_w1:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N32_H15;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N32_W1;
+            break;
+        case OQS_LMS_ID_shake_n32_h15_w2:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N32_H15;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N32_W2;
+            break;
+        case OQS_LMS_ID_shake_n32_h15_w4:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N32_H15;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N32_W4;
+            break;
+        case OQS_LMS_ID_shake_n32_h15_w8:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N32_H15;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N32_W8;
+            break;
+        case OQS_LMS_ID_shake_n32_h20_w1:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N32_H20;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N32_W1;
+            break;
+        case OQS_LMS_ID_shake_n32_h20_w2:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N32_H20;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N32_W2;
+            break;
+        case OQS_LMS_ID_shake_n32_h20_w4:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N32_H20;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N32_W4;
+            break;
+        case OQS_LMS_ID_shake_n32_h20_w8:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N32_H20;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N32_W8;
+            break;
+        case OQS_LMS_ID_shake_n32_h25_w1:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N32_H25;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N32_W1;
+            break;
+        case OQS_LMS_ID_shake_n32_h25_w2:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N32_H25;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N32_W2;
+            break;
+        case OQS_LMS_ID_shake_n32_h25_w4:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N32_H25;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N32_W4;
+            break;
+        case OQS_LMS_ID_shake_n32_h25_w8:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N32_H25;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N32_W8;
+            break;
+        /* SHAKE256/192 */
+        case OQS_LMS_ID_shake_n24_h5_w1:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N24_H5;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N24_W1;
+            break;
+        case OQS_LMS_ID_shake_n24_h5_w2:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N24_H5;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N24_W2;
+            break;
+        case OQS_LMS_ID_shake_n24_h5_w4:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N24_H5;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N24_W4;
+            break;
+        case OQS_LMS_ID_shake_n24_h5_w8:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N24_H5;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N24_W8;
+            break;
+        case OQS_LMS_ID_shake_n24_h10_w1:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N24_H10;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N24_W1;
+            break;
+        case OQS_LMS_ID_shake_n24_h10_w2:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N24_H10;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N24_W2;
+            break;
+        case OQS_LMS_ID_shake_n24_h10_w4:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N24_H10;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N24_W4;
+            break;
+        case OQS_LMS_ID_shake_n24_h10_w8:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N24_H10;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N24_W8;
+            break;
+        case OQS_LMS_ID_shake_n24_h15_w1:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N24_H15;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N24_W1;
+            break;
+        case OQS_LMS_ID_shake_n24_h15_w2:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N24_H15;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N24_W2;
+            break;
+        case OQS_LMS_ID_shake_n24_h15_w4:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N24_H15;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N24_W4;
+            break;
+        case OQS_LMS_ID_shake_n24_h15_w8:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N24_H15;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N24_W8;
+            break;
+        case OQS_LMS_ID_shake_n24_h20_w1:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N24_H20;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N24_W1;
+            break;
+        case OQS_LMS_ID_shake_n24_h20_w2:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N24_H20;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N24_W2;
+            break;
+        case OQS_LMS_ID_shake_n24_h20_w4:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N24_H20;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N24_W4;
+            break;
+        case OQS_LMS_ID_shake_n24_h20_w8:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N24_H20;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N24_W8;
+            break;
+        case OQS_LMS_ID_shake_n24_h25_w1:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N24_H25;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N24_W1;
+            break;
+        case OQS_LMS_ID_shake_n24_h25_w2:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N24_H25;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N24_W2;
+            break;
+        case OQS_LMS_ID_shake_n24_h25_w4:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N24_H25;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N24_W4;
+            break;
+        case OQS_LMS_ID_shake_n24_h25_w8:
+            oqs_key_data->lm_type[0]     = LMS_SHAKE_N24_H25;
+            oqs_key_data->lm_ots_type[0] = LMOTS_SHAKE_N24_W8;
+            break;
 	case OQS_LMS_ID_sha256_h5_w8_h5_w8:
 		oqs_key_data->levels = 2;
 		oqs_key_data->lm_type[0]     = LMS_SHA256_N32_H5;
@@ -475,6 +720,14 @@ int oqs_sig_stfl_lms_keypair(uint8_t *pk, OQS_SIG_STFL_SECRET_KEY *sk, const uin
 		break;
 	}
 
+        /* Compute actual pk length dynamically (supports N24/SHAKE variants) */
+        if (!parse_err) {
+                len_public_key = hss_get_public_key_len(
+                    oqs_key_data->levels,
+                    oqs_key_data->lm_type,
+                    oqs_key_data->lm_ots_type);
+                if (len_public_key == 0) parse_err = 1;
+        }
 	if (parse_err) {
 		OQS_MEM_insecure_free(oqs_key_data->sec_key);
 		OQS_MEM_insecure_free(oqs_key_data->aux_data);

@@ -58,11 +58,8 @@ bool hss_seed_derive_init( struct seed_derive *derive,
         return false;
     }
 
-    /* Note: currently, this assumes that the hash length is always 256 */
-    /* bits; error out if that isn't the case */
-    if (derive->m != SEED_LEN) {
-        return false;
-    }
+    /* Note: RFC 9858 / SP 800-208 adds 192-bit hash variants (m=24)
+     * so we no longer restrict to m == SEED_LEN (32). */
 #endif
 
     return true;

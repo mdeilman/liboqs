@@ -4,11 +4,18 @@
 #include "hss_internal.h"
 #include "endian.h"
 #include "hss_zeroize.h"
+#include "lm_common.h"
+#include "lm_ots_common.h"
 
 /*
  * Convert a parameter set into the compressed version we use within a private
- * key.  This is the private key that'll end up being updated constantly, and
- * so we try to make it as small as possible
+ * key.  Extended format: 2 bytes per level (PARAM_SET_COMPRESS_LEN=2)
+ *   byte 0: LMS type code  (0x05-0x18 for RFC 8554 + RFC 9858)
+ *   byte 1: LMOTS type code (0x01-0x10 for RFC 8554 + RFC 9858)
+ *   0xff 0xff: end-of-levels marker
+ *
+ * This replaces the original nibble-packed 1-byte format which only supported
+ * codes up to 0x0e, incompatible with the RFC 9858 parameter sets.
  */
 bool hss_compress_param_set( unsigned char *compressed,
                    int levels,
@@ -17,34 +24,27 @@ bool hss_compress_param_set( unsigned char *compressed,
                    size_t len_compressed ) {
     int i;
 
-    for (i=0; i<levels; i++) {
-        if (len_compressed == 0) return false;
+    for (i = 0; i < levels; i++) {
+        if (len_compressed < 2) return false;
         param_set_t a = *lm_type++;
         param_set_t b = *lm_ots_type++;
-            /* All the parameter sets we support are small */
-            /* Review this format if we need to support larger ones */
-        if (a > 0x0e || b > 0x0e) return false;
-            /* Make sure the parm sets are supported */
-        switch (a) {
-        case LMS_SHA256_N32_H5: case LMS_SHA256_N32_H10:
-        case LMS_SHA256_N32_H15: case LMS_SHA256_N32_H20:
-        case LMS_SHA256_N32_H25:
-            break;
-        default:
-            return false;
-        }
-        switch (b) {
-        case LMOTS_SHA256_N32_W1: case LMOTS_SHA256_N32_W2:
-        case LMOTS_SHA256_N32_W4: case LMOTS_SHA256_N32_W8:
-            break;
-        default:
-            return false;
-        }
 
-        *compressed++ = (a<<4) + b;
-        len_compressed--;
+        /* Validate LMS type code */
+        unsigned h, n, height;
+        if (!lm_look_up_parameter_set(a, &h, &n, &height)) return false;
+
+        /* Validate LMOTS type code */
+        unsigned oh, on, ow, op, ols;
+        if (!lm_ots_look_up_parameter_set(b, &oh, &on, &ow, &op, &ols))
+            return false;
+
+        /* Store as two separate bytes */
+        *compressed++ = (unsigned char)(a & 0xff);
+        *compressed++ = (unsigned char)(b & 0xff);
+        len_compressed -= 2;
     }
 
+    /* Fill remainder with end markers */
     while (len_compressed) {
         *compressed++ = PARM_SET_END;
         len_compressed--;
@@ -55,19 +55,7 @@ bool hss_compress_param_set( unsigned char *compressed,
 
 /*
  * This returns the parameter set for a given private key.
- * This is here to solve a chicken-and-egg problem: the hss_working_key
- * must be initialized to the same parameter set as the private key,
- * but (other than this function, or somehow remembering it) there's
- * no way to retreive the parameter set.
- *
- * read_private_key/context will read the private key (if read_private_key is
- * NULL, context is assumed to point to the private key)
- *
- * On success, *levels will be set to the number of levels, and lm_type[]
- * and lm_ots_type[] will be set to the lm/ots parameter sets
- *
- * On success, this returns true; on failure (can't read the private key, or
- * the private key is invalid), returns false
+ * Reads the 2-byte-per-level format written by hss_compress_param_set above.
  */
 bool hss_get_parameter_set( unsigned *levels,
                            param_set_t lm_type[ MAX_HSS_LEVELS ],
@@ -90,31 +78,27 @@ bool hss_get_parameter_set( unsigned *levels,
     /* Scan through the private key to recover the parameter sets */
     unsigned total_height = 0;
     unsigned level;
-    for (level=0; level < MAX_HSS_LEVELS; level++) {
-        unsigned char c = private_key[PRIVATE_KEY_PARAM_SET + level];
-        if (c == PARM_SET_END) break;
-            /* Decode this level's parameter set */
-        param_set_t lm = (c >> 4);
-        param_set_t ots = (c & 0x0f);
-            /* Make sure both are supported */
-            /* While we're here, add up the total Merkle height */
-        switch (lm) {
-        case LMS_SHA256_N32_H5:  total_height += 5; break;
-        case LMS_SHA256_N32_H10: total_height += 10; break;
-        case LMS_SHA256_N32_H15: total_height += 15; break;
-        case LMS_SHA256_N32_H20: total_height += 20; break;
-        case LMS_SHA256_N32_H25: total_height += 25; break;
-        default: goto failed;
-        }
-        switch (ots) {
-        case LMOTS_SHA256_N32_W1:
-        case LMOTS_SHA256_N32_W2:
-        case LMOTS_SHA256_N32_W4:
-        case LMOTS_SHA256_N32_W8:
-            break;
-        default: goto failed;
-        }
-        lm_type[level] = lm;
+    for (level = 0; level < MAX_HSS_LEVELS; level++) {
+        /* Each level occupies 2 bytes: [LMS type, LMOTS type] */
+        unsigned char a = private_key[PRIVATE_KEY_PARAM_SET + level * 2];
+        unsigned char b = private_key[PRIVATE_KEY_PARAM_SET + level * 2 + 1];
+
+        if (a == PARM_SET_END) break;  /* End of levels marker */
+
+        param_set_t lm  = (param_set_t)a;
+        param_set_t ots = (param_set_t)b;
+
+        /* Validate and get tree height */
+        unsigned h, n, height;
+        if (!lm_look_up_parameter_set(lm, &h, &n, &height)) goto failed;
+        total_height += height;
+
+        /* Validate LMOTS type */
+        unsigned oh, on, ow, op, ols;
+        if (!lm_ots_look_up_parameter_set(ots, &oh, &on, &ow, &op, &ols))
+            goto failed;
+
+        lm_type[level]     = lm;
         lm_ots_type[level] = ots;
     }
 
@@ -122,33 +106,24 @@ bool hss_get_parameter_set( unsigned *levels,
 
     *levels = level;
 
-    /* Make sure that the rest of the private key has PARM_SET_END */
+    /* Make sure the rest of the private key has PARM_SET_END markers */
     unsigned i;
-    for (i = level+1; i<MAX_HSS_LEVELS; i++) {
-        unsigned char c = private_key[PRIVATE_KEY_PARAM_SET + i];
-        if (c != PARM_SET_END) goto failed;
+    for (i = level; i < MAX_HSS_LEVELS; i++) {
+        unsigned char c0 = private_key[PRIVATE_KEY_PARAM_SET + i * 2];
+        unsigned char c1 = private_key[PRIVATE_KEY_PARAM_SET + i * 2 + 1];
+        if (c0 != PARM_SET_END || c1 != PARM_SET_END) goto failed;
     }
 
-    /* One final check; make sure that the sequence number listed in the */
-    /* private key is in range */
-
-    if (total_height > 64) total_height = 64; /* (bounded by 2**64) */
-    sequence_t max_count = ((sequence_t)2 << (total_height-1)) - 1;
-        /* height-1 so we don't try to shift by 64, and hit U.B. */
-
-        /* We use the count 0xffff..ffff to signify 'we've used up all our */
-        /* signatures'.  Make sure that is above max_count, even for */
-        /* parameter sets that can literally generate 2**64 signatures (by */
-        /* letting them generate only 2**64-1) */
+    /* Final check: sequence number in range */
+    if (total_height > 64) total_height = 64;
+    sequence_t max_count = ((sequence_t)2 << (total_height - 1)) - 1;
     if (total_height == 64) max_count--;
     sequence_t current_count = get_bigendian(
                  private_key + PRIVATE_KEY_INDEX, PRIVATE_KEY_INDEX_LEN );
+    if (current_count > max_count) goto failed;
 
-    if (current_count > max_count) goto failed;  /* Private key expired */
-
-    success = true;   /* It worked! */
+    success = true;
 failed:
-        /* There might be private keying material here */
     hss_zeroize( private_key, sizeof private_key );
     return success;
 }

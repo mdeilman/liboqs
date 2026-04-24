@@ -165,6 +165,71 @@ extern "C"
 /** Algorithm identifier for LMS-SHA256_H25_W8  */
 #define OQS_SIG_STFL_alg_lms_sha256_h25_w8 "LMS_SHA256_H25_W8" //"25/8"
 
+/* ----- RFC 9858 / SP 800-208 additions (auto-generated) ----- */
+/* SHA-256/192 */
+#define OQS_SIG_STFL_alg_lms_sha256_n24_h5_w1 "LMS_SHA256_N24_H5_W1" //SHA-256/192 H5/W1
+#define OQS_SIG_STFL_alg_lms_sha256_n24_h5_w2 "LMS_SHA256_N24_H5_W2" //SHA-256/192 H5/W2
+#define OQS_SIG_STFL_alg_lms_sha256_n24_h5_w4 "LMS_SHA256_N24_H5_W4" //SHA-256/192 H5/W4
+#define OQS_SIG_STFL_alg_lms_sha256_n24_h5_w8 "LMS_SHA256_N24_H5_W8" //SHA-256/192 H5/W8
+#define OQS_SIG_STFL_alg_lms_sha256_n24_h10_w1 "LMS_SHA256_N24_H10_W1" //SHA-256/192 H10/W1
+#define OQS_SIG_STFL_alg_lms_sha256_n24_h10_w2 "LMS_SHA256_N24_H10_W2" //SHA-256/192 H10/W2
+#define OQS_SIG_STFL_alg_lms_sha256_n24_h10_w4 "LMS_SHA256_N24_H10_W4" //SHA-256/192 H10/W4
+#define OQS_SIG_STFL_alg_lms_sha256_n24_h10_w8 "LMS_SHA256_N24_H10_W8" //SHA-256/192 H10/W8
+#define OQS_SIG_STFL_alg_lms_sha256_n24_h15_w1 "LMS_SHA256_N24_H15_W1" //SHA-256/192 H15/W1
+#define OQS_SIG_STFL_alg_lms_sha256_n24_h15_w2 "LMS_SHA256_N24_H15_W2" //SHA-256/192 H15/W2
+#define OQS_SIG_STFL_alg_lms_sha256_n24_h15_w4 "LMS_SHA256_N24_H15_W4" //SHA-256/192 H15/W4
+#define OQS_SIG_STFL_alg_lms_sha256_n24_h15_w8 "LMS_SHA256_N24_H15_W8" //SHA-256/192 H15/W8
+#define OQS_SIG_STFL_alg_lms_sha256_n24_h20_w1 "LMS_SHA256_N24_H20_W1" //SHA-256/192 H20/W1
+#define OQS_SIG_STFL_alg_lms_sha256_n24_h20_w2 "LMS_SHA256_N24_H20_W2" //SHA-256/192 H20/W2
+#define OQS_SIG_STFL_alg_lms_sha256_n24_h20_w4 "LMS_SHA256_N24_H20_W4" //SHA-256/192 H20/W4
+#define OQS_SIG_STFL_alg_lms_sha256_n24_h20_w8 "LMS_SHA256_N24_H20_W8" //SHA-256/192 H20/W8
+#define OQS_SIG_STFL_alg_lms_sha256_n24_h25_w1 "LMS_SHA256_N24_H25_W1" //SHA-256/192 H25/W1
+#define OQS_SIG_STFL_alg_lms_sha256_n24_h25_w2 "LMS_SHA256_N24_H25_W2" //SHA-256/192 H25/W2
+#define OQS_SIG_STFL_alg_lms_sha256_n24_h25_w4 "LMS_SHA256_N24_H25_W4" //SHA-256/192 H25/W4
+#define OQS_SIG_STFL_alg_lms_sha256_n24_h25_w8 "LMS_SHA256_N24_H25_W8" //SHA-256/192 H25/W8
+/* SHAKE256/256 */
+#define OQS_SIG_STFL_alg_lms_shake_n32_h5_w1 "LMS_SHAKE_N32_H5_W1" //SHAKE256/256 H5/W1
+#define OQS_SIG_STFL_alg_lms_shake_n32_h5_w2 "LMS_SHAKE_N32_H5_W2" //SHAKE256/256 H5/W2
+#define OQS_SIG_STFL_alg_lms_shake_n32_h5_w4 "LMS_SHAKE_N32_H5_W4" //SHAKE256/256 H5/W4
+#define OQS_SIG_STFL_alg_lms_shake_n32_h5_w8 "LMS_SHAKE_N32_H5_W8" //SHAKE256/256 H5/W8
+#define OQS_SIG_STFL_alg_lms_shake_n32_h10_w1 "LMS_SHAKE_N32_H10_W1" //SHAKE256/256 H10/W1
+#define OQS_SIG_STFL_alg_lms_shake_n32_h10_w2 "LMS_SHAKE_N32_H10_W2" //SHAKE256/256 H10/W2
+#define OQS_SIG_STFL_alg_lms_shake_n32_h10_w4 "LMS_SHAKE_N32_H10_W4" //SHAKE256/256 H10/W4
+#define OQS_SIG_STFL_alg_lms_shake_n32_h10_w8 "LMS_SHAKE_N32_H10_W8" //SHAKE256/256 H10/W8
+#define OQS_SIG_STFL_alg_lms_shake_n32_h15_w1 "LMS_SHAKE_N32_H15_W1" //SHAKE256/256 H15/W1
+#define OQS_SIG_STFL_alg_lms_shake_n32_h15_w2 "LMS_SHAKE_N32_H15_W2" //SHAKE256/256 H15/W2
+#define OQS_SIG_STFL_alg_lms_shake_n32_h15_w4 "LMS_SHAKE_N32_H15_W4" //SHAKE256/256 H15/W4
+#define OQS_SIG_STFL_alg_lms_shake_n32_h15_w8 "LMS_SHAKE_N32_H15_W8" //SHAKE256/256 H15/W8
+#define OQS_SIG_STFL_alg_lms_shake_n32_h20_w1 "LMS_SHAKE_N32_H20_W1" //SHAKE256/256 H20/W1
+#define OQS_SIG_STFL_alg_lms_shake_n32_h20_w2 "LMS_SHAKE_N32_H20_W2" //SHAKE256/256 H20/W2
+#define OQS_SIG_STFL_alg_lms_shake_n32_h20_w4 "LMS_SHAKE_N32_H20_W4" //SHAKE256/256 H20/W4
+#define OQS_SIG_STFL_alg_lms_shake_n32_h20_w8 "LMS_SHAKE_N32_H20_W8" //SHAKE256/256 H20/W8
+#define OQS_SIG_STFL_alg_lms_shake_n32_h25_w1 "LMS_SHAKE_N32_H25_W1" //SHAKE256/256 H25/W1
+#define OQS_SIG_STFL_alg_lms_shake_n32_h25_w2 "LMS_SHAKE_N32_H25_W2" //SHAKE256/256 H25/W2
+#define OQS_SIG_STFL_alg_lms_shake_n32_h25_w4 "LMS_SHAKE_N32_H25_W4" //SHAKE256/256 H25/W4
+#define OQS_SIG_STFL_alg_lms_shake_n32_h25_w8 "LMS_SHAKE_N32_H25_W8" //SHAKE256/256 H25/W8
+/* SHAKE256/192 */
+#define OQS_SIG_STFL_alg_lms_shake_n24_h5_w1 "LMS_SHAKE_N24_H5_W1" //SHAKE256/192 H5/W1
+#define OQS_SIG_STFL_alg_lms_shake_n24_h5_w2 "LMS_SHAKE_N24_H5_W2" //SHAKE256/192 H5/W2
+#define OQS_SIG_STFL_alg_lms_shake_n24_h5_w4 "LMS_SHAKE_N24_H5_W4" //SHAKE256/192 H5/W4
+#define OQS_SIG_STFL_alg_lms_shake_n24_h5_w8 "LMS_SHAKE_N24_H5_W8" //SHAKE256/192 H5/W8
+#define OQS_SIG_STFL_alg_lms_shake_n24_h10_w1 "LMS_SHAKE_N24_H10_W1" //SHAKE256/192 H10/W1
+#define OQS_SIG_STFL_alg_lms_shake_n24_h10_w2 "LMS_SHAKE_N24_H10_W2" //SHAKE256/192 H10/W2
+#define OQS_SIG_STFL_alg_lms_shake_n24_h10_w4 "LMS_SHAKE_N24_H10_W4" //SHAKE256/192 H10/W4
+#define OQS_SIG_STFL_alg_lms_shake_n24_h10_w8 "LMS_SHAKE_N24_H10_W8" //SHAKE256/192 H10/W8
+#define OQS_SIG_STFL_alg_lms_shake_n24_h15_w1 "LMS_SHAKE_N24_H15_W1" //SHAKE256/192 H15/W1
+#define OQS_SIG_STFL_alg_lms_shake_n24_h15_w2 "LMS_SHAKE_N24_H15_W2" //SHAKE256/192 H15/W2
+#define OQS_SIG_STFL_alg_lms_shake_n24_h15_w4 "LMS_SHAKE_N24_H15_W4" //SHAKE256/192 H15/W4
+#define OQS_SIG_STFL_alg_lms_shake_n24_h15_w8 "LMS_SHAKE_N24_H15_W8" //SHAKE256/192 H15/W8
+#define OQS_SIG_STFL_alg_lms_shake_n24_h20_w1 "LMS_SHAKE_N24_H20_W1" //SHAKE256/192 H20/W1
+#define OQS_SIG_STFL_alg_lms_shake_n24_h20_w2 "LMS_SHAKE_N24_H20_W2" //SHAKE256/192 H20/W2
+#define OQS_SIG_STFL_alg_lms_shake_n24_h20_w4 "LMS_SHAKE_N24_H20_W4" //SHAKE256/192 H20/W4
+#define OQS_SIG_STFL_alg_lms_shake_n24_h20_w8 "LMS_SHAKE_N24_H20_W8" //SHAKE256/192 H20/W8
+#define OQS_SIG_STFL_alg_lms_shake_n24_h25_w1 "LMS_SHAKE_N24_H25_W1" //SHAKE256/192 H25/W1
+#define OQS_SIG_STFL_alg_lms_shake_n24_h25_w2 "LMS_SHAKE_N24_H25_W2" //SHAKE256/192 H25/W2
+#define OQS_SIG_STFL_alg_lms_shake_n24_h25_w4 "LMS_SHAKE_N24_H25_W4" //SHAKE256/192 H25/W4
+#define OQS_SIG_STFL_alg_lms_shake_n24_h25_w8 "LMS_SHAKE_N24_H25_W8" //SHAKE256/192 H25/W8
+
 // 2-Level LMS
 /** Algorithm identifier for LMS-SHA256_H5_W8_H5_W8  */
 #define OQS_SIG_STFL_alg_lms_sha256_h5_w8_h5_w8 "LMS_SHA256_H5_W8_H5_W8" //"5/8, 5/8"
@@ -199,7 +264,7 @@ extern "C"
 #define OQS_SIG_STFL_alg_lms_sha256_h20_w8_h20_w8 "LMS_SHA256_H20_W8_H20_W8" //"20/8, 20/8"
 
 /** Total number of stateful variants defined above, used to create the tracking array */
-#define OQS_SIG_STFL_algs_length 70
+#define OQS_SIG_STFL_algs_length 130
 
 typedef struct OQS_SIG_STFL_SECRET_KEY OQS_SIG_STFL_SECRET_KEY;
 
