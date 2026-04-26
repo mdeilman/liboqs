@@ -54,6 +54,7 @@ void hss_hash_ctx(void *result, int hash_type, union hash_context *ctx,
         OQS_SHA2_sha256_inc(&ctx->sha256, message, message_len);
         SHA256_Final(tmp, &ctx->sha256);
         memcpy(result, tmp, 24);
+        hss_zeroize(tmp, sizeof tmp);
         break;
     }
     case HASH_SHAKE256_N32: {
@@ -62,7 +63,6 @@ void hss_hash_ctx(void *result, int hash_type, union hash_context *ctx,
         OQS_SHA3_shake256_inc_absorb(&ctx->shake256, message, message_len);
         OQS_SHA3_shake256_inc_finalize(&ctx->shake256);
         OQS_SHA3_shake256_inc_squeeze(result, 32, &ctx->shake256);
-        OQS_SHA3_shake256_inc_ctx_release(&ctx->shake256);
         break;
     }
     case HASH_SHAKE256_N24: {
@@ -71,7 +71,6 @@ void hss_hash_ctx(void *result, int hash_type, union hash_context *ctx,
         OQS_SHA3_shake256_inc_absorb(&ctx->shake256, message, message_len);
         OQS_SHA3_shake256_inc_finalize(&ctx->shake256);
         OQS_SHA3_shake256_inc_squeeze(result, 24, &ctx->shake256);
-        OQS_SHA3_shake256_inc_ctx_release(&ctx->shake256);
         break;
     }
     }
@@ -81,6 +80,10 @@ void hss_hash(void *result, int hash_type,
           const void *message, size_t message_len) {
     union hash_context ctx;
     hss_hash_ctx(result, hash_type, &ctx, message, message_len);
+    /* Release SHAKE context heap memory before zeroizing the struct */
+    if (hash_type == HASH_SHAKE256_N32 || hash_type == HASH_SHAKE256_N24) {
+        OQS_SHA3_shake256_inc_ctx_release(&ctx.shake256);
+    }
     hss_zeroize(&ctx, sizeof ctx);
 }
 
@@ -138,6 +141,7 @@ void hss_finalize_hash_context(int h, union hash_context *ctx, void *buffer) {
         unsigned char tmp[32];
         SHA256_Final(tmp, &ctx->sha256);
         memcpy(buffer, tmp, 24);
+        hss_zeroize(tmp, sizeof tmp);
         break;
     }
     case HASH_SHAKE256_N32:
