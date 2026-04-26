@@ -15,7 +15,7 @@
 
 #define PARAM_SET_COMPRESS_LEN 2  /* We assume that we can compress the */
                                   /* lm_type and the lm_ots type for a */
-                                  /* single level into 1 byte */
+                                  /* single level into 2 bytes (extended for RFC 9858) */
 
 #define PARM_SET_END 0xff   /* We set this marker in the parameter set */
                             /* when fewer than the maximum levels are used */
