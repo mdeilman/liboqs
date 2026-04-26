@@ -59,7 +59,17 @@ bool hss_seed_derive_init( struct seed_derive *derive,
     }
 
     /* Note: RFC 9858 / SP 800-208 adds 192-bit hash variants (m=24)
-     * so we no longer restrict to m == SEED_LEN (32). */
+     * so we no longer restrict to m == SEED_LEN (32).
+     *
+     * The seed derivation in hss_seed_derive() always uses SEED_LEN (32)
+     * for the master seed and hash buffer, regardless of m. This is correct
+     * because the master seed is always 32 bytes; only the public key hash
+     * output uses the shorter m=24 length.
+     *
+     * LIMITATION: Multi-level HSS combinations using N24/SHAKE-N24 hash
+     * families are not supported — child seeds derived for sub-trees would
+     * be 24 bytes but read back as 32 bytes, causing undefined behavior.
+     * Only single-tree (levels=1) variants are implemented for RFC 9858. */
 #endif
 
     return true;
