@@ -194,6 +194,70 @@ OQS_SIG_STFL_SECRET_KEY *OQS_SECRET_KEY_LMS_##LMS_VARIANT##_new(void) {\
         return sk;\
 }
 
+// ======================== RFC 9858 variant macro ======================== //
+// Same as LMS_ALG but with RFC 9858 alg_version URL
+#define LMS_ALG_RFC9858(lms_variant, LMS_VARIANT) \
+OQS_SIG_STFL *OQS_SIG_STFL_alg_lms_##lms_variant##_new(void) { \
+\
+        OQS_SIG_STFL *sig = (OQS_SIG_STFL *)OQS_MEM_malloc(sizeof(OQS_SIG_STFL)); \
+        if (sig == NULL) { \
+                return NULL; \
+        } \
+        memset(sig, 0, sizeof(OQS_SIG_STFL)); \
+\
+        LMS_SIGGEN(lms_variant, ) \
+        sig->method_name = OQS_SIG_STFL_alg_lms_##lms_variant; \
+        sig->alg_version = "https://datatracker.ietf.org/doc/rfc9858/"; \
+        sig->euf_cma = true; \
+        sig->suf_cma = false; \
+\
+        sig->length_public_key = OQS_SIG_STFL_alg_lms_##lms_variant##_length_pk; \
+        sig->length_secret_key = OQS_SIG_STFL_alg_lms_length_private_key; \
+        sig->length_signature = OQS_SIG_STFL_alg_lms_##lms_variant##_length_signature; \
+\
+        sig->verify = OQS_SIG_STFL_alg_lms_verify; \
+\
+        return sig;\
+} \
+\
+OQS_STATUS OQS_SIG_STFL_alg_lms_##lms_variant##_keypair(uint8_t *public_key, OQS_SIG_STFL_SECRET_KEY *secret_key) {\
+        if (secret_key == NULL || public_key == NULL) {\
+                return OQS_ERROR;\
+        }\
+\
+        if (oqs_sig_stfl_lms_keypair(public_key, secret_key, (const uint32_t)OQS_LMS_ID_##lms_variant) != 0) {\
+                return OQS_ERROR;\
+        }\
+        return OQS_SUCCESS;\
+}\
+\
+OQS_SIG_STFL_SECRET_KEY *OQS_SECRET_KEY_LMS_##LMS_VARIANT##_new(void) {\
+\
+        OQS_SIG_STFL_SECRET_KEY *sk = OQS_MEM_malloc(sizeof(OQS_SIG_STFL_SECRET_KEY));\
+        if (sk == NULL) {\
+                return NULL;\
+        }\
+        OQS_MEM_cleanse(sk, sizeof(OQS_SIG_STFL_SECRET_KEY));\
+\
+        sk->length_secret_key = OQS_SIG_STFL_alg_lms_length_private_key;\
+\
+        sk->serialize_key = OQS_SECRET_KEY_LMS_serialize_key;\
+\
+        sk->deserialize_key = OQS_SECRET_KEY_LMS_deserialize_key;\
+\
+        sk->lock_key = NULL;\
+\
+        sk->unlock_key = NULL;\
+\
+        sk->secure_store_scrt_key = NULL;\
+\
+        sk->free_key = OQS_SECRET_KEY_LMS_free;\
+\
+        sk->set_scrt_key_store_cb = OQS_SECRET_KEY_LMS_set_store_cb;\
+\
+        return sk;\
+}
+
 // ======================== LMS-SHA256 H5/W1 ======================== //
 LMS_ALG(sha256_h5_w1, SHA256_H5_W1)
 
@@ -275,127 +339,127 @@ LMS_ALG(sha256_h25_w8, SHA256_H25_W8)
 
 /* ----- RFC 9858 / SP 800-208 LMS_ALG instantiations (auto-generated) ----- */
 /* SHA-256/192 */
-LMS_ALG(sha256_n24_h5_w1, SHA256_N24_H5_W1)
+LMS_ALG_RFC9858(sha256_n24_h5_w1, SHA256_N24_H5_W1)
 
-LMS_ALG(sha256_n24_h5_w2, SHA256_N24_H5_W2)
+LMS_ALG_RFC9858(sha256_n24_h5_w2, SHA256_N24_H5_W2)
 
-LMS_ALG(sha256_n24_h5_w4, SHA256_N24_H5_W4)
+LMS_ALG_RFC9858(sha256_n24_h5_w4, SHA256_N24_H5_W4)
 
-LMS_ALG(sha256_n24_h5_w8, SHA256_N24_H5_W8)
+LMS_ALG_RFC9858(sha256_n24_h5_w8, SHA256_N24_H5_W8)
 
-LMS_ALG(sha256_n24_h10_w1, SHA256_N24_H10_W1)
+LMS_ALG_RFC9858(sha256_n24_h10_w1, SHA256_N24_H10_W1)
 
-LMS_ALG(sha256_n24_h10_w2, SHA256_N24_H10_W2)
+LMS_ALG_RFC9858(sha256_n24_h10_w2, SHA256_N24_H10_W2)
 
-LMS_ALG(sha256_n24_h10_w4, SHA256_N24_H10_W4)
+LMS_ALG_RFC9858(sha256_n24_h10_w4, SHA256_N24_H10_W4)
 
-LMS_ALG(sha256_n24_h10_w8, SHA256_N24_H10_W8)
+LMS_ALG_RFC9858(sha256_n24_h10_w8, SHA256_N24_H10_W8)
 
-LMS_ALG(sha256_n24_h15_w1, SHA256_N24_H15_W1)
+LMS_ALG_RFC9858(sha256_n24_h15_w1, SHA256_N24_H15_W1)
 
-LMS_ALG(sha256_n24_h15_w2, SHA256_N24_H15_W2)
+LMS_ALG_RFC9858(sha256_n24_h15_w2, SHA256_N24_H15_W2)
 
-LMS_ALG(sha256_n24_h15_w4, SHA256_N24_H15_W4)
+LMS_ALG_RFC9858(sha256_n24_h15_w4, SHA256_N24_H15_W4)
 
-LMS_ALG(sha256_n24_h15_w8, SHA256_N24_H15_W8)
+LMS_ALG_RFC9858(sha256_n24_h15_w8, SHA256_N24_H15_W8)
 
-LMS_ALG(sha256_n24_h20_w1, SHA256_N24_H20_W1)
+LMS_ALG_RFC9858(sha256_n24_h20_w1, SHA256_N24_H20_W1)
 
-LMS_ALG(sha256_n24_h20_w2, SHA256_N24_H20_W2)
+LMS_ALG_RFC9858(sha256_n24_h20_w2, SHA256_N24_H20_W2)
 
-LMS_ALG(sha256_n24_h20_w4, SHA256_N24_H20_W4)
+LMS_ALG_RFC9858(sha256_n24_h20_w4, SHA256_N24_H20_W4)
 
-LMS_ALG(sha256_n24_h20_w8, SHA256_N24_H20_W8)
+LMS_ALG_RFC9858(sha256_n24_h20_w8, SHA256_N24_H20_W8)
 
-LMS_ALG(sha256_n24_h25_w1, SHA256_N24_H25_W1)
+LMS_ALG_RFC9858(sha256_n24_h25_w1, SHA256_N24_H25_W1)
 
-LMS_ALG(sha256_n24_h25_w2, SHA256_N24_H25_W2)
+LMS_ALG_RFC9858(sha256_n24_h25_w2, SHA256_N24_H25_W2)
 
-LMS_ALG(sha256_n24_h25_w4, SHA256_N24_H25_W4)
+LMS_ALG_RFC9858(sha256_n24_h25_w4, SHA256_N24_H25_W4)
 
-LMS_ALG(sha256_n24_h25_w8, SHA256_N24_H25_W8)
+LMS_ALG_RFC9858(sha256_n24_h25_w8, SHA256_N24_H25_W8)
 
 /* SHAKE256/256 */
-LMS_ALG(shake_n32_h5_w1, SHAKE_N32_H5_W1)
+LMS_ALG_RFC9858(shake_n32_h5_w1, SHAKE_N32_H5_W1)
 
-LMS_ALG(shake_n32_h5_w2, SHAKE_N32_H5_W2)
+LMS_ALG_RFC9858(shake_n32_h5_w2, SHAKE_N32_H5_W2)
 
-LMS_ALG(shake_n32_h5_w4, SHAKE_N32_H5_W4)
+LMS_ALG_RFC9858(shake_n32_h5_w4, SHAKE_N32_H5_W4)
 
-LMS_ALG(shake_n32_h5_w8, SHAKE_N32_H5_W8)
+LMS_ALG_RFC9858(shake_n32_h5_w8, SHAKE_N32_H5_W8)
 
-LMS_ALG(shake_n32_h10_w1, SHAKE_N32_H10_W1)
+LMS_ALG_RFC9858(shake_n32_h10_w1, SHAKE_N32_H10_W1)
 
-LMS_ALG(shake_n32_h10_w2, SHAKE_N32_H10_W2)
+LMS_ALG_RFC9858(shake_n32_h10_w2, SHAKE_N32_H10_W2)
 
-LMS_ALG(shake_n32_h10_w4, SHAKE_N32_H10_W4)
+LMS_ALG_RFC9858(shake_n32_h10_w4, SHAKE_N32_H10_W4)
 
-LMS_ALG(shake_n32_h10_w8, SHAKE_N32_H10_W8)
+LMS_ALG_RFC9858(shake_n32_h10_w8, SHAKE_N32_H10_W8)
 
-LMS_ALG(shake_n32_h15_w1, SHAKE_N32_H15_W1)
+LMS_ALG_RFC9858(shake_n32_h15_w1, SHAKE_N32_H15_W1)
 
-LMS_ALG(shake_n32_h15_w2, SHAKE_N32_H15_W2)
+LMS_ALG_RFC9858(shake_n32_h15_w2, SHAKE_N32_H15_W2)
 
-LMS_ALG(shake_n32_h15_w4, SHAKE_N32_H15_W4)
+LMS_ALG_RFC9858(shake_n32_h15_w4, SHAKE_N32_H15_W4)
 
-LMS_ALG(shake_n32_h15_w8, SHAKE_N32_H15_W8)
+LMS_ALG_RFC9858(shake_n32_h15_w8, SHAKE_N32_H15_W8)
 
-LMS_ALG(shake_n32_h20_w1, SHAKE_N32_H20_W1)
+LMS_ALG_RFC9858(shake_n32_h20_w1, SHAKE_N32_H20_W1)
 
-LMS_ALG(shake_n32_h20_w2, SHAKE_N32_H20_W2)
+LMS_ALG_RFC9858(shake_n32_h20_w2, SHAKE_N32_H20_W2)
 
-LMS_ALG(shake_n32_h20_w4, SHAKE_N32_H20_W4)
+LMS_ALG_RFC9858(shake_n32_h20_w4, SHAKE_N32_H20_W4)
 
-LMS_ALG(shake_n32_h20_w8, SHAKE_N32_H20_W8)
+LMS_ALG_RFC9858(shake_n32_h20_w8, SHAKE_N32_H20_W8)
 
-LMS_ALG(shake_n32_h25_w1, SHAKE_N32_H25_W1)
+LMS_ALG_RFC9858(shake_n32_h25_w1, SHAKE_N32_H25_W1)
 
-LMS_ALG(shake_n32_h25_w2, SHAKE_N32_H25_W2)
+LMS_ALG_RFC9858(shake_n32_h25_w2, SHAKE_N32_H25_W2)
 
-LMS_ALG(shake_n32_h25_w4, SHAKE_N32_H25_W4)
+LMS_ALG_RFC9858(shake_n32_h25_w4, SHAKE_N32_H25_W4)
 
-LMS_ALG(shake_n32_h25_w8, SHAKE_N32_H25_W8)
+LMS_ALG_RFC9858(shake_n32_h25_w8, SHAKE_N32_H25_W8)
 
 /* SHAKE256/192 */
-LMS_ALG(shake_n24_h5_w1, SHAKE_N24_H5_W1)
+LMS_ALG_RFC9858(shake_n24_h5_w1, SHAKE_N24_H5_W1)
 
-LMS_ALG(shake_n24_h5_w2, SHAKE_N24_H5_W2)
+LMS_ALG_RFC9858(shake_n24_h5_w2, SHAKE_N24_H5_W2)
 
-LMS_ALG(shake_n24_h5_w4, SHAKE_N24_H5_W4)
+LMS_ALG_RFC9858(shake_n24_h5_w4, SHAKE_N24_H5_W4)
 
-LMS_ALG(shake_n24_h5_w8, SHAKE_N24_H5_W8)
+LMS_ALG_RFC9858(shake_n24_h5_w8, SHAKE_N24_H5_W8)
 
-LMS_ALG(shake_n24_h10_w1, SHAKE_N24_H10_W1)
+LMS_ALG_RFC9858(shake_n24_h10_w1, SHAKE_N24_H10_W1)
 
-LMS_ALG(shake_n24_h10_w2, SHAKE_N24_H10_W2)
+LMS_ALG_RFC9858(shake_n24_h10_w2, SHAKE_N24_H10_W2)
 
-LMS_ALG(shake_n24_h10_w4, SHAKE_N24_H10_W4)
+LMS_ALG_RFC9858(shake_n24_h10_w4, SHAKE_N24_H10_W4)
 
-LMS_ALG(shake_n24_h10_w8, SHAKE_N24_H10_W8)
+LMS_ALG_RFC9858(shake_n24_h10_w8, SHAKE_N24_H10_W8)
 
-LMS_ALG(shake_n24_h15_w1, SHAKE_N24_H15_W1)
+LMS_ALG_RFC9858(shake_n24_h15_w1, SHAKE_N24_H15_W1)
 
-LMS_ALG(shake_n24_h15_w2, SHAKE_N24_H15_W2)
+LMS_ALG_RFC9858(shake_n24_h15_w2, SHAKE_N24_H15_W2)
 
-LMS_ALG(shake_n24_h15_w4, SHAKE_N24_H15_W4)
+LMS_ALG_RFC9858(shake_n24_h15_w4, SHAKE_N24_H15_W4)
 
-LMS_ALG(shake_n24_h15_w8, SHAKE_N24_H15_W8)
+LMS_ALG_RFC9858(shake_n24_h15_w8, SHAKE_N24_H15_W8)
 
-LMS_ALG(shake_n24_h20_w1, SHAKE_N24_H20_W1)
+LMS_ALG_RFC9858(shake_n24_h20_w1, SHAKE_N24_H20_W1)
 
-LMS_ALG(shake_n24_h20_w2, SHAKE_N24_H20_W2)
+LMS_ALG_RFC9858(shake_n24_h20_w2, SHAKE_N24_H20_W2)
 
-LMS_ALG(shake_n24_h20_w4, SHAKE_N24_H20_W4)
+LMS_ALG_RFC9858(shake_n24_h20_w4, SHAKE_N24_H20_W4)
 
-LMS_ALG(shake_n24_h20_w8, SHAKE_N24_H20_W8)
+LMS_ALG_RFC9858(shake_n24_h20_w8, SHAKE_N24_H20_W8)
 
-LMS_ALG(shake_n24_h25_w1, SHAKE_N24_H25_W1)
+LMS_ALG_RFC9858(shake_n24_h25_w1, SHAKE_N24_H25_W1)
 
-LMS_ALG(shake_n24_h25_w2, SHAKE_N24_H25_W2)
+LMS_ALG_RFC9858(shake_n24_h25_w2, SHAKE_N24_H25_W2)
 
-LMS_ALG(shake_n24_h25_w4, SHAKE_N24_H25_W4)
+LMS_ALG_RFC9858(shake_n24_h25_w4, SHAKE_N24_H25_W4)
 
-LMS_ALG(shake_n24_h25_w8, SHAKE_N24_H25_W8)
+LMS_ALG_RFC9858(shake_n24_h25_w8, SHAKE_N24_H25_W8)
 
 
 //
