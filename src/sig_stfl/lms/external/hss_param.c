@@ -83,7 +83,9 @@ bool hss_get_parameter_set( unsigned *levels,
         unsigned char a = private_key[PRIVATE_KEY_PARAM_SET + level * 2];
         unsigned char b = private_key[PRIVATE_KEY_PARAM_SET + level * 2 + 1];
 
-        if (a == PARM_SET_END) break;  /* End of levels marker */
+        /* Both bytes must be end markers — reject malformed keys */
+        if (a == PARM_SET_END && b == PARM_SET_END) break;
+        if (a == PARM_SET_END || b == PARM_SET_END) goto failed;
 
         param_set_t lm  = (param_set_t)a;
         param_set_t ots = (param_set_t)b;
