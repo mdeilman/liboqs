@@ -3,7 +3,7 @@
 **Date:** 2025-04-24  
 **Branch:** `feature/lms-nist-800-208`  
 **Base:** `open-quantum-safe/liboqs` v0.15.0 (commit `ef70dea`)  
-**Author:** Marius Deilmann
+**Author:** Mario Deilmann & Claude (Anthropic)
 
 ---
 
