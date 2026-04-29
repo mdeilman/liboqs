@@ -70,7 +70,7 @@ bool hss_sign_init(
 
     struct seed_derive derive;
     if (!hss_seed_derive_init( &derive, bottom->lm_type, bottom->lm_ots_type,
-                       bottom->I, bottom->seed )) return false;
+                       bottom->I, bottom->seed, hss_seed_size(bottom->lm_type) )) return false;
     hss_seed_derive_set_q(&derive, q);
     lm_ots_generate_randomizer( ctx->c, bottom->hash_size, &derive );
     hss_seed_derive_done(&derive);
@@ -203,7 +203,7 @@ bool hss_sign_finalize(
     param_set_t ots_type = working_key->tree[i]->lm_ots_type;
     struct seed_derive derive;
     bool success = hss_seed_derive_init( &derive, lm_type, ots_type,
-                          I, seed );
+                          I, seed, hss_seed_size(lm_type) );
     if (success) {
         hss_seed_derive_set_q( &derive, ctx->q );
         success = lm_ots_generate_signature(

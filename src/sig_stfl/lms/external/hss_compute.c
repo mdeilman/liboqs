@@ -59,7 +59,7 @@ static enum hss_error_code hss_compute_internal_node( unsigned char *dest,
 
     struct seed_derive derive;
     if (!hss_seed_derive_init( &derive, lm_type, lm_ots_type,
-                               I, seed)) {
+                               I, seed, hss_seed_size(lm_type))) {
         return hss_error_bad_param_set;
     }
 

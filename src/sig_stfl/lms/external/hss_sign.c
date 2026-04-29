@@ -54,7 +54,7 @@ static enum subtree_build_status subtree_add_next_node(
     const unsigned char *seed = (next_tree ? tree->seed_next : tree->seed);
     struct seed_derive derive;
     if (!hss_seed_derive_init( &derive, tree->lm_type, tree->lm_ots_type,
-                       I, seed )) return subtree_got_error;
+                       I, seed, hss_seed_size(tree->lm_type) )) return subtree_got_error;
     hss_seed_derive_set_q(&derive, r);
     if (!lm_ots_generate_public_key(tree->lm_ots_type, I,
                    r, &derive, pub_key + LEAF_PK, ots_len)) {
@@ -189,7 +189,7 @@ static int generate_merkle_signature(
         struct seed_derive derive;
         if (!hss_seed_derive_init( &derive,
                             tree->lm_type, tree->lm_ots_type,
-                            tree->I, tree->seed )) return 0;
+                            tree->I, tree->seed, hss_seed_size(tree->lm_type) )) return 0;
         hss_seed_derive_set_q(&derive, current_index);
         bool success = lm_ots_generate_signature( tree->lm_ots_type, tree->I,
                                     current_index, &derive,
