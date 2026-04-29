@@ -179,20 +179,48 @@ Also added `#include <oqs/sha3.h>`.
 
 ### 8. `src/sig_stfl/lms/external/hss_derive.c`
 
-**Change:** Removed the `m != SEED_LEN` guard that was killing all N24 variants.
+**Changes:**
+
+1. Removed the `m != SEED_LEN` guard that was killing all N24 variants (original fix).
+
+2. Ported `hss_seed_size()` support from `cisco/hash-sigs:shake-support` — the most important correctness fix, identified during Crypto Architect review.
+
+**Why this was needed:** The Cisco `SECRET_METHOD == 2` path stores the hash function in `derive->hash` and hash output length in `derive->m`. The original guard `m != SEED_LEN` rejected N24 variants. But more critically, the seed derivation was hardcoding `SEED_LEN=32` for the master seed copy and hash buffer, making our implementation non-interoperable with Cisco's shake-support branch which uses a variable seed length.
+
+**Fix:** Added `master_seed_len` to `struct seed_derive`, populated via `hss_seed_size(lm)` which returns `n` (24 for N24, 32 for N32/SHA256). Updated `hss_seed_derive()` to use `master_seed_len` instead of `SEED_LEN`.
 
 ```c
-// Removed:
-if (derive->m != SEED_LEN) {
-    return false;
-}
+// hss_seed_derive() — before:
+memcpy(buffer + PRG_SEED, derive->master_seed, SEED_LEN);
+hss_hash(seed, hash, buffer, PRG_LEN(SEED_LEN));
 
-// Replaced with comment:
-/* RFC 9858 / SP 800-208 adds 192-bit hash variants (m=24)
- * so we no longer restrict to m == SEED_LEN (32). */
+// hss_seed_derive() — after:
+unsigned master_seed_len = derive->master_seed_len; // 24 or 32
+memcpy(buffer + PRG_SEED, derive->master_seed, master_seed_len);
+hss_hash(seed, hash, buffer, PRG_LEN(master_seed_len));
 ```
 
-**Why this was needed:** The Cisco `SECRET_METHOD == 2` path (which liboqs uses) looked up the hash function from the parameter set and stored it in `derive->m`. It then checked `m == SEED_LEN (32)` and returned false for N24 variants where `m = 24`. The seed itself is always 32 bytes; only the hash *output* varies.
+**Result:** Both RFC 9858 Appendix A KAT vectors now pass exactly.
+
+---
+
+### 8b. `src/sig_stfl/lms/external/hss.c`
+
+**Change:** Added `hss_seed_size()` helper function, ported from `cisco/hash-sigs:shake-support`:
+
+```c
+size_t hss_seed_size(param_set_t lm) {
+#if SECRET_METHOD == 2
+    unsigned m;
+    if (!lm_look_up_parameter_set(lm, 0, &m, 0)) return 0;
+    return m;  // 24 for N24, 32 for N32/SHA256
+#else
+    return SEED_LEN;
+#endif
+}
+```
+
+Also added `#include "lm_common.h"` for `lm_look_up_parameter_set`.
 
 ---
 
@@ -272,6 +300,9 @@ The implementation required fixing 9 distinct bugs, discovered in this order:
 | 5 | `keypair failed` | `len_public_key = 60` hardcoded in `sig_stfl_lms_functions.c` | Changed to dynamic `hss_get_public_key_len()` call |
 | 6 | `bad_param_set` (error 7) | Nibble encoding `(a<<4)\|b` limited to codes ≤ 0x0e | Rewrote `hss_param.c` with 2-byte-per-level encoding |
 | 7 | `bad_param_set` on N24 | `m != SEED_LEN` guard in `hss_derive.c` rejected 24-byte hashes | Removed the guard |
+| 8 | Stale objects | CMake incremental build not recompiling changed files | `rm -rf build/*` + clean rebuild |
+| 9 | `-O3` confusion | Assumed `grep "0xa"` on optimized objects would find switch cases | Jump table optimization hides literal constants; use `-E` preprocessor instead |
+| 10 | KAT mismatch / interop gap | Seed derivation hardcoded `SEED_LEN=32`; Cisco shake-support uses variable `hss_seed_size(lm)` | Ported `hss_seed_size()` and `master_seed_len` from Cisco branch; both RFC 9858 KAT vectors now pass |
 | 8 | Stale objects | CMake incremental build not recompiling changed files | `rm -rf build/*` + clean rebuild |
 | 9 | `-O3` confusion | Assumed `grep "0xa"` on optimized objects would find switch cases | Jump table optimization hides literal constants; use `-E` preprocessor instead |
 
@@ -369,7 +400,7 @@ For firmware signing in an HSM product, the most relevant parameter sets are:
 
 - Two-level HSS combinations (e.g., `LMS_SHA256_N24_H10_W4_LMS_SHA256_N24_H5_W8`) are not yet wired — only single-tree variants are implemented
 - The `apply_lms_nist_patches.py` script works but has fragile anchor patterns; it was used during development but the changes are now committed
-- KAT (Known Answer Test) vectors from RFC 9858 / SP 800-208 have not yet been integrated into the test harness
+- KAT test (`test_lms_nist_kat.c`) passes both RFC 9858 Appendix A vectors exactly. Not yet integrated into the liboqs test harness — to be added under `tests/`.
 - Code generator scripts (`scripts/copy_from_upstream/`) for downstream language bindings (Python, Go, Java, Rust) have not been run — do this before upstreaming
 
 ---
