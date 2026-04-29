@@ -47,29 +47,21 @@
 /* This creates a seed derivation object */
 bool hss_seed_derive_init( struct seed_derive *derive,
                  param_set_t lm, param_set_t ots,
-                 const unsigned char *I, const unsigned char *seed ) {
+                 const unsigned char *I, const unsigned char *seed,
+                 size_t seed_len ) {
     derive->I = I;
     derive->master_seed = seed;
     LMS_UNUSED(ots);
     /* q, j will be set later */
 #if SECRET_METHOD == 2
-    /* Grab the hash function to use */
+    /* Grab the hash function from the parameter set.
+     * seed_len is passed by the caller via hss_seed_size(lm_type).
+     * For N24 variants seed_len=24, for N32/SHA256 seed_len=32.
+     * Ported from cisco/hash-sigs:shake-support. */
     if (!lm_look_up_parameter_set(lm, &derive->hash, &derive->m, 0)) {
         return false;
     }
-
-    /* Note: RFC 9858 / SP 800-208 adds 192-bit hash variants (m=24)
-     * so we no longer restrict to m == SEED_LEN (32).
-     *
-     * The seed derivation in hss_seed_derive() always uses SEED_LEN (32)
-     * for the master seed and hash buffer, regardless of m. This is correct
-     * because the master seed is always 32 bytes; only the public key hash
-     * output uses the shorter m=24 length.
-     *
-     * LIMITATION: Multi-level HSS combinations using N24/SHAKE-N24 hash
-     * families are not supported — child seeds derived for sub-trees would
-     * be 24 bytes but read back as 32 bytes, causing undefined behavior.
-     * Only single-tree (levels=1) variants are implemented for RFC 9858. */
+    derive->master_seed_len = seed_len;
 #endif
 
     return true;
@@ -95,17 +87,18 @@ void hss_seed_derive( unsigned char *seed, struct seed_derive *derive,
     put_bigendian( buffer + PRG_Q, derive->q, 4 );
     put_bigendian( buffer + PRG_J, derive->j, 2 );
     buffer[PRG_FF] = 0xff;
-    memcpy( buffer + PRG_SEED, derive->master_seed, SEED_LEN );
-
 #if SECRET_METHOD == 2
+    unsigned master_seed_len = derive->master_seed_len;
     int hash = derive->hash;    /* Our the parameter set's hash function */
 #else
+    unsigned master_seed_len = SEED_LEN;
     int hash = HASH;            /* Use our standard one */
 #endif
+    memcpy( buffer + PRG_SEED, derive->master_seed, master_seed_len );
 
-    hss_hash( seed, hash, buffer, PRG_LEN(SEED_LEN) );
+    hss_hash( seed, hash, buffer, PRG_LEN(master_seed_len) );
 
-    hss_zeroize( buffer, PRG_LEN(SEED_LEN) );
+    hss_zeroize( buffer, PRG_LEN(master_seed_len) );
 
     if (increment_j) derive->j += 1;
 }

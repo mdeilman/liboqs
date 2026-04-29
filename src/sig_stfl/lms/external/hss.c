@@ -16,6 +16,7 @@
 #include "hss_derive.h"
 #include "config.h"
 #include "lm_ots_common.h"
+#include "lm_common.h"
 
 /*
  * Allocate and load an ephemeral key
@@ -123,13 +124,31 @@ bool hss_generate_root_seed_I_value(unsigned char *seed, unsigned char *I,
  * So we use a fixed SHA256; when we support a hash function other than SHA256,
  * we needn't update this.
  */
+
+/*
+ * Returns the seed length for a given LMS parameter set.
+ * For SECRET_METHOD==2 this is the hash output length n (e.g. 24 for N24).
+ * Ported from cisco/hash-sigs:shake-support.
+ */
+size_t hss_seed_size(param_set_t lm) {
+#if SECRET_METHOD == 2
+    unsigned m;
+    if (!lm_look_up_parameter_set(lm, 0, &m, 0)) {
+        return 0;
+    }
+    return m;
+#else
+    return SEED_LEN;
+#endif
+}
+
 bool hss_generate_child_seed_I_value( unsigned char *seed, unsigned char *I,
                    const unsigned char *parent_seed,
                    const unsigned char *parent_I,
                    merkle_index_t index,
                    param_set_t lm, param_set_t ots) {
     struct seed_derive derive;
-    if (!hss_seed_derive_init( &derive, lm, ots, parent_I, parent_seed )) {
+    if (!hss_seed_derive_init( &derive, lm, ots, parent_I, parent_seed, hss_seed_size(lm) )) {
         return false;
     }
 

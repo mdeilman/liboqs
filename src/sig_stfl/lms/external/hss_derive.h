@@ -15,6 +15,7 @@
 struct seed_derive {
     const unsigned char *I;
     const unsigned char *master_seed;
+    unsigned master_seed_len; /* Length of master_seed (n for N24, 32 otherwise) */
     merkle_index_t q;
     unsigned j;
 #if SECRET_METHOD == 2
@@ -42,7 +43,8 @@ struct seed_derive {
 
 bool hss_seed_derive_init( struct seed_derive *derive,
                  param_set_t lm, param_set_t ots,
-                 const unsigned char *I, const unsigned char *seed );
+                 const unsigned char *I, const unsigned char *seed,
+                 size_t seed_len );
 
 /* This sets the internal 'q' value */
 /* If we've already have a 'q' value set, it'll try to minimize the number */
