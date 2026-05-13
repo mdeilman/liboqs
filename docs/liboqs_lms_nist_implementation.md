@@ -19,7 +19,7 @@ NIST SP 800-208 approves LMS/HSS for use in hardware cryptographic modules (HSMs
 
 | Implementation | Language | RFC 9858 support | Notes |
 |---|---|---|---|
-| `cisco/hash-sigs` | C | ❌ | RFC 8554 only; vendored into liboqs |
+| `cisco/hash-sigs` | C | Partial (`shake-support` branch) | RFC 8554 on master; RFC 9858 on `shake-support` branch (not yet merged); vendored into liboqs |
 | `open-quantum-safe/liboqs` | C | ❌ | Only exposes Cisco's RFC 8554 sets |
 | `ashman-p/liboqs-lms` | C | Partial | Started wiring layer, didn't touch crypto |
 | Botan | C++ | ✅ | Independent implementation, full support |
