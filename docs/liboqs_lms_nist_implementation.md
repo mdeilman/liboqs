@@ -1,6 +1,6 @@
 # liboqs: RFC 9858 / SP 800-208 LMS Parameter Sets — Implementation Journal
 
-**Date:** 2025-04-24  
+**Date:** 2026-05-13 (last updated)  
 **Branch:** `feature/lms-nist-800-208`  
 **Base:** `open-quantum-safe/liboqs` v0.15.0 (commit `ef70dea`)  
 **Author:** Mario Deilmann & Claude (Anthropic)
