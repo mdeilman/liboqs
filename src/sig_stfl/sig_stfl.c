@@ -87,8 +87,7 @@ OQS_API const char *OQS_SIG_STFL_alg_identifier(size_t i) {
 		OQS_SIG_STFL_alg_lms_sha256_h25_w4,
 		OQS_SIG_STFL_alg_lms_sha256_h25_w8,
 
-		// RFC 9858 / SP 800-208 LMS additions
-		// SHA-256/192
+		/* RFC 9858 / SP 800-208 - SHA-256/192 */
 		OQS_SIG_STFL_alg_lms_sha256_n24_h5_w1,
 		OQS_SIG_STFL_alg_lms_sha256_n24_h5_w2,
 		OQS_SIG_STFL_alg_lms_sha256_n24_h5_w4,
@@ -109,7 +108,7 @@ OQS_API const char *OQS_SIG_STFL_alg_identifier(size_t i) {
 		OQS_SIG_STFL_alg_lms_sha256_n24_h25_w2,
 		OQS_SIG_STFL_alg_lms_sha256_n24_h25_w4,
 		OQS_SIG_STFL_alg_lms_sha256_n24_h25_w8,
-		// SHAKE256/256
+		/* RFC 9858 / SP 800-208 - SHAKE256/256 */
 		OQS_SIG_STFL_alg_lms_shake_n32_h5_w1,
 		OQS_SIG_STFL_alg_lms_shake_n32_h5_w2,
 		OQS_SIG_STFL_alg_lms_shake_n32_h5_w4,
@@ -130,7 +129,7 @@ OQS_API const char *OQS_SIG_STFL_alg_identifier(size_t i) {
 		OQS_SIG_STFL_alg_lms_shake_n32_h25_w2,
 		OQS_SIG_STFL_alg_lms_shake_n32_h25_w4,
 		OQS_SIG_STFL_alg_lms_shake_n32_h25_w8,
-		// SHAKE256/192
+		/* RFC 9858 / SP 800-208 - SHAKE256/192 */
 		OQS_SIG_STFL_alg_lms_shake_n24_h5_w1,
 		OQS_SIG_STFL_alg_lms_shake_n24_h5_w2,
 		OQS_SIG_STFL_alg_lms_shake_n24_h5_w4,
@@ -1460,7 +1459,7 @@ OQS_API OQS_SIG_STFL *OQS_SIG_STFL_new(const char *method_name) {
 #else
 		return NULL;
 #endif
-		// SHAKE256/256
+		/* RFC 9858 / SP 800-208 - SHAKE256/256 */
 	} else if (0 == strcasecmp(method_name, OQS_SIG_STFL_alg_lms_shake_n32_h5_w1)) {
 #ifdef OQS_ENABLE_SIG_STFL_lms_shake_n32_h5_w1
 		return OQS_SIG_STFL_alg_lms_shake_n32_h5_w1_new();
@@ -1581,7 +1580,7 @@ OQS_API OQS_SIG_STFL *OQS_SIG_STFL_new(const char *method_name) {
 #else
 		return NULL;
 #endif
-		// SHAKE256/192
+		/* RFC 9858 / SP 800-208 - SHAKE256/192 */
 	} else if (0 == strcasecmp(method_name, OQS_SIG_STFL_alg_lms_shake_n24_h5_w1)) {
 #ifdef OQS_ENABLE_SIG_STFL_lms_shake_n24_h5_w1
 		return OQS_SIG_STFL_alg_lms_shake_n24_h5_w1_new();
