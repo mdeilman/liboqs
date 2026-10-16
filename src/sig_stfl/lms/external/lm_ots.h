@@ -1,10 +1,8 @@
-// SPDX-License-Identifier: MIT
 #if !defined( LM_OTS_H_ )
 #define LM_OTS_H_
 
 #include "common_defs.h"
 #include <stddef.h>
-#include "lms_namespace.h"
 
 /*
  * These are routines that implement the OTS signature scheme.  These routines

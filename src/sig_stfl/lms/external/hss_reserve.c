@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: MIT
 #include <string.h>
 #include "common_defs.h"
 #include "hss_internal.h"
@@ -53,15 +52,17 @@ bool hss_advance_count(struct hss_working_key *w, sequence_t cur_count,
         *trash_private_key = true;  /* We can't trash our copy of the */
                 /* private key until after we've generated the signature */
                 /* We can trash the copy in secure storage, though */
+        int h0_len = w->tree[0]->hash_size;
         if (update_private_key) {
-            unsigned char private_key[PRIVATE_KEY_LEN];
-            OQS_MEM_cleanse(private_key, PRIVATE_KEY_LEN);
-            if (!update_private_key(private_key, PRIVATE_KEY_LEN, context)) {
+            unsigned char private_key[PRIVATE_KEY_LEN(MAX_SEED_LEN)];
+            memset( private_key, PARM_SET_END, PRIVATE_KEY_LEN(MAX_SEED_LEN) );
+            if (!update_private_key(private_key, PRIVATE_KEY_LEN(h0_len),
+                                                                 context)) {
                 info->error_code = hss_error_private_key_write_failed;
                 return false;
             }
         } else {
-            memset( context, PARM_SET_END, PRIVATE_KEY_LEN );
+            memset( context, PARM_SET_END, PRIVATE_KEY_LEN(h0_len) );
         }
         return true;
     }
@@ -102,7 +103,10 @@ bool hss_advance_count(struct hss_working_key *w, sequence_t cur_count,
 /*
  * This will make sure that (at least) N signatures are reserved; that is, we
  * won't need to actually call the update function for the next N signatures
- * generated
+ * generated.
+ * This also has the effect of minimizing the changes of a signature generation
+ * failure will occur (possibly because of an update failure) in the next
+ * N signatures.
  *
  * This can be useful if the update_private_key function is expensive.
  *
@@ -123,7 +127,7 @@ bool hss_reserve_signature(
         return false;
     }
     if (w->status != hss_error_none) {
-        info->error_code = w->status;;
+        info->error_code = w->status;
         return false;
     }
 
@@ -140,7 +144,8 @@ bool hss_reserve_signature(
      * reason we shouldn't support it
      */
     if (!update_private_key) {
-        if (0 != memcmp( context, w->private_key, PRIVATE_KEY_LEN)) {
+        int h0_len = w->tree[0]->hash_size;
+        if (0 != memcmp( context, w->private_key, PRIVATE_KEY_LEN(h0_len))) {
             info->error_code = hss_error_key_mismatch;
             return false;   /* Private key mismatch */
         }
@@ -148,7 +153,7 @@ bool hss_reserve_signature(
 
     /* Figure out what the current count is */
     sequence_t current_count = 0;
-    unsigned i;
+    int i;
     for (i = 0; i<w->levels; i++) {
         struct merkle_level *tree = w->tree[i];
             /* -1 because the current_index counts the signatures to the */
@@ -162,8 +167,9 @@ bool hss_reserve_signature(
                      /* setting would be (if we accept the reservation) */
     if (current_count > w->max_count - sigs_to_reserve) {
         /* Not that many sigantures left */
-        /* Reserve as many as we can */
-        new_reserve_count = w->max_count;
+	/* We can't promise to be able to generate that many signatures */
+        info->error_code = hss_error_not_that_many_sigs_left;
+        return false;
     } else {
         new_reserve_count = current_count + sigs_to_reserve;
     }

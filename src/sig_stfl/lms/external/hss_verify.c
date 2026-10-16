@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: MIT
 /*
  * This is the code that implements the hierarchical part of the LMS hash
  * based signatures
@@ -19,7 +18,7 @@
 /* Number of levels (1-8) (4 bytes) */
 /* The top level LM public key */
 
-/* The HSS signature consists of: */
+/* The HSS signature consists of: */ 
 /* A word giving the number of levels - 1 == L-1 */
 /* L-1 iterations of (i = 1..L-1): */
 /*    - LMS Signature of public key i (signed by the pub key of level i-1) */
@@ -51,7 +50,7 @@ void validate_internal_sig(const void *data,
  * siganture - the signature we're checking
  * signature_len - the length of the signature
  *
- * This returns true if everything checks out and the signature verifies
+ * This returns true if everything checks out and the signature verifies 
  * false on error (whether the error is because the signature didn't verify,
  * or we hit some sort of error on the way)
  */
@@ -69,17 +68,17 @@ bool hss_validate_signature(
          info->error_code = hss_error_bad_signature;
          return false;
     }
-    uint_fast32_t levels = (uint_fast32_t)get_bigendian( signature, 4 ) + 1;
+    uint_fast32_t levels = get_bigendian( signature, 4 ) + 1;
         /* +1 because what's in the signature is levels-1 */
     signature += 4; signature_len -= 4;
     if (levels < MIN_HSS_LEVELS || levels > MAX_HSS_LEVELS ||
-                               levels != (uint_fast32_t)get_bigendian( public_key, 4 )) {
+                               levels != get_bigendian( public_key, 4 )) {
         info->error_code = hss_error_bad_signature;
         return false;
     }
 
     /* Compare that to what the public key says */
-    uint_fast32_t pub_levels = (uint_fast32_t)get_bigendian( public_key, 4 );
+    uint_fast32_t pub_levels = get_bigendian( public_key, 4 );
     if (levels != pub_levels) {
         /* Signature and public key don't agree */
         info->error_code = hss_error_bad_signature;
@@ -96,7 +95,7 @@ bool hss_validate_signature(
 
     /* Parse through the signature, kicking off the tasks to validate */
     /* individual LMS signatures within it as we go */
-    for (i=0; i<levels-1; i++) {
+    for (i=0; i<levels-1; i++) { 
         /*
          * At this point of time, the current position in the signature
          * looks like (or, rather, is *supposed to look like*) this:
@@ -110,9 +109,9 @@ bool hss_validate_signature(
          */
 
         /* Get the length of Signature A */
-        param_set_t lm_type = (param_set_t)get_bigendian( public_key, 4 );
-        param_set_t lm_ots_type = (param_set_t)get_bigendian( public_key+4, 4 );
-        unsigned l_siglen = (unsigned)lm_get_signature_len(lm_type, lm_ots_type);
+        param_set_t lm_type = get_bigendian( public_key, 4 );
+        param_set_t lm_ots_type = get_bigendian( public_key+4, 4 );
+        unsigned l_siglen = lm_get_signature_len(lm_type, lm_ots_type);
         if (l_siglen == 0 || l_siglen > signature_len) {
             info->error_code = hss_error_bad_signature;
              goto failed;
@@ -135,8 +134,8 @@ bool hss_validate_signature(
          * someone other than the valid signer modified it), then
          * Signature A will not validate, and so we'll catch that
          */
-        lm_type = (param_set_t)get_bigendian( signature, 4 );
-        unsigned l_pubkeylen = (unsigned)lm_get_public_key_len(lm_type);
+        lm_type = get_bigendian( signature, 4 );
+        unsigned l_pubkeylen = lm_get_public_key_len(lm_type);
         if (l_pubkeylen == 0 || l_pubkeylen > signature_len) {
             info->error_code = hss_error_bad_signature;
             goto failed;

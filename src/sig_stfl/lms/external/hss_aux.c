@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: MIT
 /*
  * This is the implementation of the aux data within the HSS tree
  */
@@ -59,10 +58,10 @@ aux_level_t hss_optimal_aux_level( size_t max_length,
                    const param_set_t *lm_type,
                    const param_set_t *lm_ots_type,
                    size_t *actual_len ) {
+
     unsigned h0;  /* The height of the root tree */
     unsigned size_hash;  /* The size of each hash that would appear in the */
                   /* aux data */
-    LMS_UNUSED(lm_ots_type);
     if (!lm_look_up_parameter_set(lm_type[0], NULL, &size_hash, &h0)) {
         /* Unrecognized parameter set */
         return 0;
@@ -134,9 +133,9 @@ struct expanded_aux_data *hss_expand_aux_data( const unsigned char *aux_data,
     if (!aux_data || aux_data[AUX_DATA_MARKER] == NO_AUX_DATA) return 0;
 
     const unsigned char *orig_aux_data = aux_data;
-    unsigned long aux_level = (unsigned long)get_bigendian( aux_data, 4 );
+    unsigned long aux_level = get_bigendian( aux_data, 4 );
     aux_data += 4;
-    aux_level &= 0x7ffffffffL;  /* Turn off the 'used' marker */
+    aux_level &= 0x7fffffffL;  /* Turn off the 'used' marker */
 
     unsigned h;
     for (h = 0; h <= MAX_MERKLE_HEIGHT; h++, aux_level >>= 1) {
@@ -185,7 +184,7 @@ size_t hss_get_aux_data_len(size_t max_length,
                    const param_set_t *lm_type,
                    const param_set_t *lm_ots_type) {
     size_t len = 0;
-    LMS_UNUSED(levels);
+
     if (!hss_optimal_aux_level( max_length, lm_type, lm_ots_type, &len )) {
         return 1;  /* 1 byte marker to say 'we're not using it */
     }
@@ -195,7 +194,7 @@ size_t hss_get_aux_data_len(size_t max_length,
 
 /*
  * Save the marker within the aux data
- */
+ */ 
 void hss_store_aux_marker( unsigned char *aux_data, aux_level_t aux_level ) {
     if (aux_level == 0) {
          /* Aux data doesn't help; mark it as unused */
@@ -238,7 +237,7 @@ static void compute_seed_derive( unsigned char *result, unsigned hash,
     memset( prefix, 0, DAUX_D );
     SET_D( prefix + DAUX_D, D_DAUX );
     hss_update_hash_context( hash, ctx, prefix, sizeof prefix );
-    hss_update_hash_context( hash, ctx, seed, SEED_LEN );
+    hss_update_hash_context( hash, ctx, seed, hss_hash_length(hash) );
     hss_finalize_hash_context( hash, ctx, result );
 
     hss_zeroize( &ctx, sizeof ctx );

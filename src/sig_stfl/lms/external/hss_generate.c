@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: MIT
 /*
  * This is the routine that generates the ephemeral ("working") key from the
  * short private value.  It builds all the various current, building and
@@ -81,7 +80,7 @@ static void fill_subtree(const struct merkle_level *tree,
 
         merkle_index_t i;
         for (i=0; i<node_count; i++) {
-            hss_combine_internal_nodes(
+            hss_combine_internal_nodes( 
                         &subtree->nodes[ hash_size *(lower_index + i)],
                         &subtree->nodes[ hash_size *(prev_lower_index + 2*i)],
                         &subtree->nodes[ hash_size *(prev_lower_index + 2*i+1)],
@@ -110,8 +109,8 @@ static void hash_subtree( unsigned char *dest,
     for (; num_level > 1; num_level--) {
         unsigned i;
         merkle_index_t this_level_node_index = node_index << (num_level-1);
-        for (i = 0; i < ((unsigned)1<<(num_level-1)); i++) {
-            hss_combine_internal_nodes(
+        for (i = 0; i < (1<<(num_level-1)); i++) {
+            hss_combine_internal_nodes( 
                         &hashes[ hash_size * i ],
                         &hashes[ hash_size * (2*i) ],
                         &hashes[ hash_size * (2*i + 1) ],
@@ -121,7 +120,7 @@ static void hash_subtree( unsigned char *dest,
     }
 
     /* Combine the top two nodes to form our actual target */
-    hss_combine_internal_nodes(
+    hss_combine_internal_nodes( 
                         dest,
                         &hashes[ 0 ],
                         &hashes[ hash_size ],
@@ -255,20 +254,40 @@ bool hss_generate_working_key(
     }
 
     /* Read the private key */
-    unsigned char private_key[ PRIVATE_KEY_LEN ];
+    unsigned char private_key[ PRIVATE_KEY_LEN(MAX_SEED_LEN) ];
+#if SECRET_METHOD == 2
+    int try;
+    int seed_len = MIN_SEED_LEN;
+    for (try=0; try<2; try++) {
+        if (read_private_key) {
+            if (!read_private_key( private_key, PRIVATE_KEY_LEN(seed_len), context)) {
+                info->error_code = hss_error_private_key_read_failed;
+                goto failed;
+            }
+        } else {
+            memcpy( private_key, context, PRIVATE_KEY_LEN(seed_len) );
+        }
+        int hash_len = get_level0_lm_hash_len( private_key );
+        if (hash_len == 0) break;
+        if (hash_len == seed_len) break;  /* We read in the entire thing */
+        seed_len = hash_len;
+     }
+     if (try == 2) goto failed;
+#else
     if (read_private_key) {
-        if (!read_private_key( private_key, PRIVATE_KEY_LEN, context)) {
+        if (!read_private_key( private_key, PRIVATE_KEY_LEN(seed_len), context)) {
             info->error_code = hss_error_private_key_read_failed;
             goto failed;
         }
     } else {
-        memcpy( private_key, context, PRIVATE_KEY_LEN );
+        memcpy( private_key, context, PRIVATE_KEY_LEN(seed_len) );
     }
+#endif
 
     /*
      * Make sure that the private key and the allocated working key are
      * compatible; that the working_key was initialized with the same
-     * parameter set
+     * parameter set 
      */
     {
         if (w->levels > MAX_HSS_LEVELS) {
@@ -277,12 +296,12 @@ bool hss_generate_working_key(
         }
         unsigned char compressed[PRIVATE_KEY_PARAM_SET_LEN];
         param_set_t lm_type[MAX_HSS_LEVELS], lm_ots_type[MAX_HSS_LEVELS];
-        unsigned i;
+        int i;
         for (i=0; i<w->levels; i++) {
             lm_type[i] = w->tree[i]->lm_type;
             lm_ots_type[i] = w->tree[i]->lm_ots_type;
         }
-
+            
         if (!hss_compress_param_set( compressed, w->levels,
                       lm_type, lm_ots_type,
                       sizeof compressed )) {
@@ -306,22 +325,15 @@ bool hss_generate_working_key(
     }
     hss_set_reserve_count(w, current_count);
 
-    memcpy( w->private_key, private_key, PRIVATE_KEY_LEN );
+    memcpy( w->private_key, private_key,
+                              PRIVATE_KEY_LEN(w->tree[0]->hash_size) );
 
     /* Initialize all the levels of the tree */
-
-    /*
-     * Loop indices must be signed so down-loops can use i >= 0 (RFC reference
-     * implementation uses int). w->levels is unsigned; convert once — safe
-     * because allocate_working_key restricts levels to [MIN_HSS_LEVELS,
-     * MAX_HSS_LEVELS] (see common_defs.h).
-     */
-    const int nlevels = (int)w->levels;
 
     /* Initialize the current count for each level (from the bottom-up) */
     int i;
     sequence_t count = current_count;
-    for (i = nlevels - 1; i >= 0; i--) {
+    for (i = w->levels - 1; i >= 0 ; i--) {
         struct merkle_level *tree = w->tree[i];
         unsigned index = count & tree->max_index;
         count >>= tree->level;
@@ -329,14 +341,15 @@ bool hss_generate_working_key(
     }
 
     /* Initialize the I values */
-    for (i = 0; i < nlevels; i++) {
+    for (i = 0; i < w->levels; i++) {
         struct merkle_level *tree = w->tree[i];
 
         /* Initialize the I, I_next elements */
         if (i == 0) {
             /* The root seed, I value is derived from the secret key */
             hss_generate_root_seed_I_value( tree->seed, tree->I,
-                                            private_key+PRIVATE_KEY_SEED );
+                                            private_key+PRIVATE_KEY_SEED,
+			                    tree->lm_type, tree->lm_ots_type );
             /* We don't use the I_next value */
         } else {
             /* The seed, I is derived from the parent's values */
@@ -344,23 +357,39 @@ bool hss_generate_working_key(
             /* Where we are in the Merkle tree */
             struct merkle_level *parent = w->tree[i-1];
             merkle_index_t index = parent->current_index;
+            size_t len_parent_seed = hss_seed_size( parent->lm_type );
+            size_t len_child_seed = hss_seed_size( tree->lm_type );
 
-            hss_generate_child_seed_I_value( tree->seed, tree->I,
-                                             parent->seed,  parent->I,
+            if (!hss_generate_child_seed_I_value( tree->seed, tree->I,
+                                             parent->seed,  len_parent_seed,
+                                             parent->I, len_child_seed,
                                              index, parent->lm_type,
-                                             parent->lm_ots_type );
+                                             parent->lm_ots_type )) {
+                info->error_code = hss_error_internal;
+                goto failed;
+            }
             /* The next seed, I is derived from either the parent's I */
             /* or the parent's next value */
             if (index == tree->max_index) {
-                hss_generate_child_seed_I_value( tree->seed_next, tree->I_next,
-                                            parent->seed_next,  parent->I_next,
-                                            0, parent->lm_type,
-                                            parent->lm_ots_type);
+                if (!hss_generate_child_seed_I_value(
+                                            tree->seed_next, tree->I_next,
+                                            parent->seed_next, len_parent_seed,
+                                            parent->I_next, len_child_seed,
+                                            0, parent->lm_type, 
+                                            parent->lm_ots_type)) {
+                    info->error_code = hss_error_internal;
+                    goto failed;
+                }
             } else {
-                hss_generate_child_seed_I_value( tree->seed_next, tree->I_next,
-                                            parent->seed,  parent->I,
+                if (!hss_generate_child_seed_I_value(
+                                            tree->seed_next, tree->I_next,
+                                            parent->seed,  len_parent_seed,
+                                            parent->I, len_child_seed,
                                             index+1, parent->lm_type,
-                                            parent->lm_ots_type);
+                                            parent->lm_ots_type)) {
+                    info->error_code = hss_error_internal;
+                    goto failed;
+                }
             }
         }
     }
@@ -386,7 +415,7 @@ bool hss_generate_working_key(
 
     /* Step through the levels, and for each Merkle tree, compile a list of */
     /* the orders to initialize the bottoms of the subtrees that we'll need */
-    for (i = nlevels - 1; i >= 0; i--) {
+    for (i = w->levels - 1; i >= 0 ; i--) {
         struct merkle_level *tree = w->tree[i];
         unsigned hash_size = tree->hash_size;
             /* The current count within this tree */
@@ -396,6 +425,8 @@ bool hss_generate_working_key(
 
         /* Generate the active subtrees */
         int j;
+        int bot_level_subtree = tree->level;  /* The level of the bottom of */
+                                              /* the subtree */
         unsigned char *active_prev_node = 0;
         unsigned char *next_prev_node = 0;
         for (j=tree->sublevels-1; j>=0; j--) {
@@ -419,7 +450,7 @@ bool hss_generate_working_key(
                 /* update process will miss the very first update before we */
                 /* need to sign.  To account for that, generate one more */
                 /* node than what our current count would suggest */
-            if (i != nlevels - 1) {
+            if (i != w->levels - 1) {
                 subtree_count++;
             }
             active->current_index = 0;
@@ -477,7 +508,7 @@ bool hss_generate_working_key(
                 building->left_leaf = left_leaf + size_subtree;
                 building->current_index = building_count;
 
-                /* Check if this is already in the aux data */
+                /* Check if this is already in the aux data */ 
                 already_computed_lower = 0;
                 if (i == 0) {
                     merkle_index_t lower_index = num_bottom_nodes-1;
@@ -518,7 +549,7 @@ bool hss_generate_working_key(
                 /* update process will miss the very first update before we */
                 /* need to sign.  To account for that, potetially generate */
                 /* one more node than what our current count would suggest */
-                if (i != nlevels - 1) {
+                if (i != w->levels - 1) {
                     next_index++;
                 }
 
@@ -568,6 +599,8 @@ bool hss_generate_working_key(
                 }
                 next_prev_node = next_next_node;
             }
+
+            bot_level_subtree -= h_subtree;
          }
     }
 
@@ -659,14 +692,14 @@ bool hss_generate_working_key(
         size_t total_hash = (hash_len * count_nodes) << subdiv;
         unsigned h_subtree = (subtree->level == 0) ? tree->top_subtree_size :
                                                      tree->subtree_size;
-        struct sub_order *sub = OQS_MEM_malloc( sizeof *sub + total_hash );
+        struct sub_order *sub = malloc( sizeof *sub + total_hash );
         if (!sub) continue;  /* On malloc failure, don't bother trying */
                              /* to subdivide */
 
             /* Fill in the details of this suborder */
         sub->level = subdiv;
         sub->num_hashes = 1 << subdiv;
-        sub->node_num_first_target =
+        sub->node_num_first_target = 
                 (subtree->left_leaf >> subtree->levels_below) +
                      ((merkle_index_t)1 << (h_subtree + subtree->level));
         p_order->sub = sub;
@@ -698,7 +731,7 @@ bool hss_generate_working_key(
                 if (ratio > 1000) {
                     core_target = 1;
                 } else {
-                    core_target = (unsigned)(core_target / ratio);
+                    core_target = core_target / ratio;
                     if (core_target == 0) core_target = 1;
                 }
                 prev_cost = p_order->cost;
@@ -748,7 +781,7 @@ bool hss_generate_working_key(
                 if (n == right_side) continue;  /* Skip the omitted value */
                 unsigned char *dest = &sub->h[ n * sub->num_hashes * hash_len ];
                 merkle_index_t node_num = (sub->node_num_first_target+n) << sub->level;
-                unsigned k;
+                int k;
                 for (k=0; k < sub->num_hashes; k++) {
                     detail.dest = dest;
                     dest += hash_len;
@@ -798,7 +831,7 @@ bool hss_generate_working_key(
 #if DO_FLOATING_POINT
             /* Don't leak suborders on an intermediate error */
         for (i=0; i<count_order; i++) {
-            OQS_MEM_insecure_free( order[i].sub );
+            free( order[i].sub );
         }
 #endif
         info->error_code = got_error;
@@ -823,7 +856,7 @@ bool hss_generate_working_key(
                                                      tree->subtree_size;
         merkle_index_t lower_index = ((merkle_index_t)1 << h_subtree) - 1;
 
-        merkle_index_t n;
+        int n;
         for (n = 0; n < p_order->count_nodes; n++ ) {
             if (p_order->prev_node && n == p_order->prev_index) continue;
 
@@ -833,7 +866,7 @@ bool hss_generate_working_key(
                           hash_size, tree->h, I);
         }
 
-        OQS_MEM_insecure_free( sub );
+        free( sub );
         p_order->sub = 0;
     }
 #endif
@@ -862,7 +895,7 @@ bool hss_generate_working_key(
             merkle_index_t lower_index = ((merkle_index_t)1 << h_subtree) - 1;
 
                 /* Where in the subtree we place the previous root */
-            unsigned set_index = (lower_index + p_order->prev_index) * hash_size;
+            unsigned set_index = (lower_index + p_order->prev_index) * hash_size; 
             memcpy( &subtree->nodes[ set_index ], p_order->prev_node, hash_size );
         }
 
@@ -880,7 +913,7 @@ bool hss_generate_working_key(
      * Again, we could parallelize this; it's also fast enough not to be worth
      * the complexity
      */
-    for (i = 1; i < nlevels; i++) {
+    for (i = 1; i < w->levels; i++) {
         if (!hss_create_signed_public_key( w->signed_pk[i], w->siglen[i-1],
                                        w->tree[i], w->tree[i-1], w )) {
             info->error_code = hss_error_internal; /* Really shouldn't */
@@ -894,7 +927,7 @@ bool hss_generate_working_key(
      * And, we make each level as not needing an update from below (as we've
      * initialized them as already having the first update)
      */
-    for (i = 0; i < nlevels - 1; i++) {
+    for (i = 0; i < w->levels - 1; i++) {
         w->tree[i]->update_count = UPDATE_DONE;
     }
 
@@ -915,14 +948,14 @@ failed:
  * It returns the estimated number of hash compression operations total
  *
  * We use floating point because the number of hash compression functions can
- * vary a *lot*; floating point has great dynamic range.
+ * vary a *lot*; floating point has great dynamic range. 
  */
 static float estimate_total_cost( struct init_order *order,
                                   unsigned count_order ) {
     if (count_order == 0) return 0;
     float total_cost = 0;
 
-    unsigned i;
+    int i;
 
     for (i=0; i<count_order; i++) {
         unsigned long count = order[i].count_nodes;

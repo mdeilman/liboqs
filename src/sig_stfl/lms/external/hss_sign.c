@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: MIT
 /*
  * This is an implementation of the HSS signature scheme from LMS
  * This is the part that actually generates the signature
@@ -26,14 +25,14 @@ enum subtree_build_status {
     subtree_did_last_node,  /* Processed last node */
     subtree_all_done        /* We're good */
 };
-static enum subtree_build_status subtree_add_next_node(
+static enum subtree_build_status subtree_add_next_node( 
                      struct subtree *subtree,
                      struct merkle_level *tree,
                      int next_tree,
                      struct thread_collection *col) {
     unsigned subtree_size = (subtree->level>0 ? tree->subtree_size :
                                                 tree->top_subtree_size);
-    unsigned log_leafs = subtree_size + subtree->levels_below;
+    unsigned log_leafs = subtree_size + subtree->levels_below; 
     merkle_index_t max_index = (merkle_index_t)1 << log_leafs;
          /* Check if there is anything more to do */
     if (subtree->current_index == max_index) return subtree_all_done;
@@ -42,7 +41,7 @@ static enum subtree_build_status subtree_add_next_node(
 
     /* Compute the leaf node */
     merkle_index_t i;
-    unsigned ots_len = (unsigned int)lm_ots_get_public_key_len(tree->lm_ots_type);
+    unsigned ots_len = lm_ots_get_public_key_len(tree->lm_ots_type);
     unsigned char pub_key[ LEAF_MAX_LEN ];
     const unsigned char *I = (next_tree ? tree->I_next : tree->I);
     memcpy( pub_key + LEAF_I, I, I_LEN );
@@ -54,7 +53,9 @@ static enum subtree_build_status subtree_add_next_node(
     const unsigned char *seed = (next_tree ? tree->seed_next : tree->seed);
     struct seed_derive derive;
     if (!hss_seed_derive_init( &derive, tree->lm_type, tree->lm_ots_type,
-                       I, seed )) return subtree_got_error;
+                       I, seed, hss_seed_size(tree->lm_type) )) {
+        return subtree_got_error;
+    }
     hss_seed_derive_set_q(&derive, r);
     if (!lm_ots_generate_public_key(tree->lm_ots_type, I,
                    r, &derive, pub_key + LEAF_PK, ots_len)) {
@@ -65,20 +66,20 @@ static enum subtree_build_status subtree_add_next_node(
 
     /* Hash it to form the leaf node */
     union hash_context ctx;
-    hss_hash_ctx( cur_val, tree->h, &ctx, pub_key, LEAF_LEN(hash_size));
+    hss_hash_ctx( cur_val, tree->h, &ctx, pub_key, LEAF_LEN(ots_len));
 
         /* Where in the subtree we store the values */
     merkle_index_t subtree_index = subtree->current_index +
                                            ((merkle_index_t)1 << log_leafs);
     enum subtree_build_status status = subtree_more_to_do;
-
+    
     /* Walk up the stack, and then up the tree */
     for (i=0;; i++) {
         if (i >= subtree->levels_below) {
             /* This node is within the subtree; save it */
             memcpy( &subtree->nodes[ (subtree_index-1) * hash_size ], cur_val, hash_size );
         }
-        if (subtree_index == 1) { /* Hit the root */
+        if (subtree_index == 1) { /* Hit the root */ 
             status = subtree_did_last_node;
             break;
         }
@@ -117,7 +118,7 @@ static enum subtree_build_status subtree_add_next_node(
 /*
  * This steps the next tree by one.  We need to do this 2**tree->level times,
  * and then the next tree will be ready
- */
+ */ 
 static int hss_step_next_tree (struct merkle_level *tree,
                                const struct hss_working_key *w,
                                struct thread_collection *col) {
@@ -125,7 +126,6 @@ static int hss_step_next_tree (struct merkle_level *tree,
     struct subtree *subtree = 0;
     int j;
 
-    LMS_UNUSED(w);
     /* Search for the subtree to update */
     for (j = tree->sublevels-1; j>=0; j--) {
         subtree = tree->subtree[j][NEXT_TREE];
@@ -172,7 +172,6 @@ static int generate_merkle_signature(
                      const struct hss_working_key *w,
                      const void *message, size_t message_len) {
     /* First off, write the index value */
-    LMS_UNUSED(w);
     if (signature_len < 4) return 0;
     merkle_index_t current_index = tree->current_index;
     put_bigendian( signature, current_index, 4 );
@@ -184,12 +183,14 @@ static int generate_merkle_signature(
     if (message == NULL) {
         /* Internal interface: if message = NULL, we're supposed to */
         /* generate everything *except* the OTS signature */
-        OQS_MEM_cleanse( signature, ots_sig_size );
+        memset( signature, 0, ots_sig_size );
     } else {
         struct seed_derive derive;
         if (!hss_seed_derive_init( &derive,
-                            tree->lm_type, tree->lm_ots_type,
-                            tree->I, tree->seed )) return 0;
+                      tree->lm_type, tree->lm_ots_type, tree->I,
+                      tree->seed, hss_seed_size(tree->lm_type) )) {
+            return 0;
+        }
         hss_seed_derive_set_q(&derive, current_index);
         bool success = lm_ots_generate_signature( tree->lm_ots_type, tree->I,
                                     current_index, &derive,
@@ -198,7 +199,7 @@ static int generate_merkle_signature(
         hss_seed_derive_done(&derive);
         if (!success) return 0;
     }
-    signature += ots_sig_size; signature_len -= (unsigned)ots_sig_size;
+    signature += ots_sig_size; signature_len -= ots_sig_size;
 
     /* Write the LM parameter set */
     if (signature_len < 4) return 0;
@@ -254,7 +255,7 @@ bool hss_create_signed_public_key(unsigned char *signed_key,
     unsigned len_public_key = 8 + I_LEN + hash_size;
 
         /* Now, generate the signature */
-    if (!generate_merkle_signature( signed_key, (unsigned)len_signature,
+    if (!generate_merkle_signature( signed_key, len_signature,
                          parent, w, public_key, len_public_key)) {
         return false;
     }
@@ -288,7 +289,7 @@ static void do_gen_sig( const void *detail, struct thread_collection *col) {
     put_bigendian( signature, levels - 1, 4 );
     signature += 4; signature_len -= 4;
         /* The signed public keys */
-    unsigned i;
+    int i;
     for (i=1; i<levels; i++) {
             /* Note: we've already generated the signatures for the */
             /* nonbottom trees, and so their current count will already be */
@@ -304,7 +305,7 @@ static void do_gen_sig( const void *detail, struct thread_collection *col) {
     const unsigned char *message = d->message;
     size_t message_len = d->message_len;
 
-    if (!generate_merkle_signature(signature, (unsigned)signature_len,
+    if (!generate_merkle_signature(signature, signature_len,
               w->tree[ levels-1 ], w, message, message_len)) {
         goto failed;
     }
@@ -453,7 +454,7 @@ bool hss_generate_signature(
     struct hss_extra_info *info) {
     struct hss_extra_info temp_info = { 0 };
     if (!info) info = &temp_info;
-    unsigned i;
+    int i;
     bool trash_private_key = false;
 
     info->last_signature = false;
@@ -470,7 +471,8 @@ bool hss_generate_signature(
     /* If we're given a raw private key, make sure it's the one we're */
     /* thinking of */
     if (!update_private_key) {
-        if (0 != memcmp( context, w->private_key, PRIVATE_KEY_LEN)) {
+        int h0_len = w->tree[0]->hash_size;
+        if (0 != memcmp( context, w->private_key, PRIVATE_KEY_LEN(h0_len))) {
             info->error_code = hss_error_key_mismatch;
             return false;   /* Private key mismatch */
         }
@@ -574,7 +576,7 @@ bool hss_generate_signature(
         hss_thread_issue_work(col, do_update_parent, &detail, sizeof detail);
     }
 
-    /* Wait for all of them to finish */
+    /* Wait for all of them to finish */ 
     hss_thread_done(col);
 
     /* Check if any of them reported a failure */
@@ -594,12 +596,12 @@ bool hss_generate_signature(
     unsigned merkle_levels_below = 0;
     int switch_merkle = w->levels;
     struct merkle_level *tree;
-    for (i = w->levels-1; i>=1; i--, merkle_levels_below += tree->level) {
+    for (i = w->levels-1; i>=0; i--, merkle_levels_below += tree->level) {
         tree = w->tree[i];
 
         if (0 == (cur_count & (((sequence_t)1 << (merkle_levels_below + tree->level))-1))) {
             /* We exhausted this tree */
-            if ((i-1) == 0) {
+            if (i == 0) {
                 /* We've run out of signatures; we've already caught this */
                 /* above; just make *sure* we've marked the key as */
                 /* unusable, and give up */
@@ -613,8 +615,8 @@ bool hss_generate_signature(
         }
 
         /* Check if we need to advance any of the subtrees */
-        unsigned subtree_levels_below = 0;
-        unsigned j;
+        unsigned subtree_levels_below = 0; 
+        int j;
         for (j = tree->sublevels-1; j>0; j--) {
             subtree_levels_below += tree->subtree_size;
             if (0 != (cur_count & (((sequence_t)1 << (merkle_levels_below + subtree_levels_below))-1))) {
@@ -640,23 +642,23 @@ done_advancing:
     /* Check if we used up any Merkle trees; if we have, switch to the */
     /* NEXT_TREE (which we've built in our spare time) */
     for (i = switch_merkle; i < w->levels; i++) {
-        struct merkle_level *tree_l = w->tree[i];
+        struct merkle_level *tree = w->tree[i];
         struct merkle_level *parent = w->tree[i-1];
-        unsigned j;
+        int j;
 
         /* Rearrange the subtrees */
         for (j=0; j<tree->sublevels; j++) {
             /* Make the NEXT_TREE active; replace it with the current active */
-            struct subtree *active = tree_l->subtree[j][NEXT_TREE];
-            struct subtree *next = tree_l->subtree[j][ACTIVE_TREE];
+            struct subtree *active = tree->subtree[j][NEXT_TREE];
+            struct subtree *next = tree->subtree[j][ACTIVE_TREE];
             unsigned char *stack = active->stack;  /* Stack stays with */
                                                  /* next tree */
 
             active->left_leaf = 0;
             next->current_index = 0;
             next->left_leaf = 0;
-            tree_l->subtree[j][ACTIVE_TREE] = active;
-            tree_l->subtree[j][NEXT_TREE] = next;
+            tree->subtree[j][ACTIVE_TREE] = active;
+            tree->subtree[j][NEXT_TREE] = next;
             active->stack = NULL;
             next->stack = stack;
             if (j > 0) {
@@ -670,29 +672,39 @@ done_advancing:
         }
 
         /* Copy in the value of seed, I we'll use for the new tree */
-        memcpy( tree_l->seed, tree->seed_next, SEED_LEN );
-        memcpy( tree_l->I, tree->I_next, I_LEN );
+        memcpy( tree->seed, tree->seed_next, MAX_SEED_LEN );
+        memcpy( tree->I, tree->I_next, I_LEN );
 
         /* Compute the new next I, which is derived from either the parent's */
         /* I or the parent's I_next value */
         merkle_index_t index = parent->current_index;
+        size_t parent_seed_len = hss_seed_size(parent->lm_type);
+        size_t child_seed_len = hss_seed_size(tree->lm_type);
         if (index == parent->max_index) {
-            hss_generate_child_seed_I_value(tree->seed_next, tree->I_next,
-                                       parent->seed_next, parent->I_next, 0,
+            if (!hss_generate_child_seed_I_value(tree->seed_next, tree->I_next,
+                                       parent->seed_next, parent_seed_len,
+                                       parent->I_next, child_seed_len, 0,
                                        parent->lm_type,
-                                       parent->lm_ots_type);
+                                       parent->lm_ots_type)) {
+                info->error_code = hss_error_internal;
+                goto failed;
+            }
         } else {
-            hss_generate_child_seed_I_value( tree->seed_next, tree->I_next,
-                                       parent->seed, parent->I, index+1,
+            if (!hss_generate_child_seed_I_value(tree->seed_next, tree->I_next,
+                                       parent->seed, parent_seed_len,
+                                       parent->I, child_seed_len, index+1,
                                        parent->lm_type,
-                                       parent->lm_ots_type);
+                                       parent->lm_ots_type)) {
+                info->error_code = hss_error_internal;
+                goto failed;
+            }
          }
 
-        tree_l->current_index = 0;  /* We're starting this from scratch */
+         tree->current_index = 0;  /* We're starting this from scratch */
 
          /* Generate the signature of the new level */
          if (!hss_create_signed_public_key( w->signed_pk[i], w->siglen[i-1],
-                                            tree_l, parent, w )) {
+                                        tree, parent, w )) {
             info->error_code = hss_error_internal;
             goto failed;
         }
@@ -701,7 +713,7 @@ done_advancing:
     /* And we've set things up for the next signature... */
 
     if (trash_private_key) {
-        OQS_MEM_cleanse( w->private_key, PRIVATE_KEY_LEN );
+        memset( w->private_key, PARM_SET_END, PRIVATE_KEY_LEN(MAX_SEED_LEN));
     }
 
     return true;
@@ -709,12 +721,12 @@ done_advancing:
 failed:
 
     if (trash_private_key) {
-        OQS_MEM_cleanse( w->private_key, PRIVATE_KEY_LEN );
+        memset( w->private_key, PARM_SET_END, PRIVATE_KEY_LEN(MAX_SEED_LEN));
     }
 
     /* On failure, make sure that we don't return anything that might be */
     /* misconstrued as a real signature */
-    OQS_MEM_cleanse( signature, signature_buf_len );
+    memset( signature, 0, signature_buf_len );
     return false;
 }
 
@@ -732,6 +744,6 @@ size_t hss_get_signature_len_from_working_key(struct hss_working_key *w) {
         lm[i] = w->tree[i]->lm_type;
         ots[i] = w->tree[i]->lm_ots_type;
     }
-
+    
     return hss_get_signature_len(levels, lm, ots);
 }

@@ -1,7 +1,6 @@
-// SPDX-License-Identifier: MIT
 /*
  * This is the code that implements the hierarchical part of the LMS hash
- * based signatures; in this case, incremental verification
+ * based signatures; in this case, incremental verification 
  */
 #include <string.h>
 #include "common_defs.h"
@@ -15,80 +14,6 @@
 #include "hss_internal.h"
 #include "lm_ots_common.h"
 #include "hss.h"
-
-/*
- * Classify a serialized public key buffer as HSS or LMS by correlating its
- * leading fields with the incremental-signature header.
- *
- * Public-key layouts (RFC 8554, sec. 5.3 and 6.1):
- *   - HSS pk: u32(L) || u32(lm_type) || u32(lm_ots) || I || T[1]
- *   - LMS pk:           u32(lm_type) || u32(lm_ots) || I || T[1]
- *
- * signature header :
- *   sig[]   = u32(L-1) || u32(q) || u32(lm_ots) ...
- *                     L = (the HSS level count minus one)
- * Therefore, for an HSS public key, sig[0..3] + 1 must equal pk[0..3] and the
- * resulting level count must be a valid HSS level (1..MAX_HSS_LEVELS). As a
- * cross-check, pk[4..7] is required to be a valid LMS type for HSS 
- * and pk[8..11] is required to be a valid LM-OTS type for LMS;
- * Further, the signature LM-OTS types must those present in the public key.
- */
-static bool is_hss_public_key(const unsigned char *public_key,
-                              const unsigned char *signature,
-                              size_t signature_len) {
-	if (signature_len < HSS_SIG_INC_HEADER_LEN) {
-		return false;
-	}
-	uint_fast32_t sig_levels =
-	    (uint_fast32_t)get_bigendian(signature, 4) + 1;
-    uint_fast32_t sig_lm_ots  = (uint_fast32_t)get_bigendian(signature + 8, 4);
-	uint_fast32_t pk_levels   = (uint_fast32_t)get_bigendian(public_key, 4);
-	uint_fast32_t pk_lm_type  = (uint_fast32_t)get_bigendian(public_key + 4, 4);
-    uint_fast32_t pk_lm_ots   = (uint_fast32_t)get_bigendian(public_key + 8, 4);
-
-	if (sig_levels < MIN_HSS_LEVELS || sig_levels > MAX_HSS_LEVELS) {
-		return false;
-	}
-	if (pk_levels != sig_levels) {
-		return false;
-	}
-    if (pk_lm_ots != sig_lm_ots) {
-        return false;
-    }
-	return oqs_lms_type_list_contains(pk_lm_type) && oqs_lmots_type_list_contains(pk_lm_ots);
-}
-
-/*
- * Parse a public key buffer as a serialized LMS or HSS public key.
- * Returns 0 on failure; 1 for a single-tree LMS public key; or the HSS level
- * count (from the first four bytes) when the buffer matches the HSS layout.
- * Validate by matching the fields in the signature buffer.
- */
-static uint_fast32_t public_key_levels(const unsigned char *public_key,
-                                       const unsigned char *signature,
-                                       size_t signature_len) {
-	param_set_t w0 = (param_set_t)get_bigendian(public_key, 4);
-	param_set_t w1 = (param_set_t)get_bigendian(public_key + 4, 4);
-	param_set_t w2 = (param_set_t)get_bigendian(public_key + 8, 4);
-
-	if (is_hss_public_key(public_key, signature, signature_len)) {
-		uint_fast32_t levels = (uint_fast32_t)w0;
-		if (levels < MIN_HSS_LEVELS || levels > MAX_HSS_LEVELS) {
-			return 0;
-		}
-		if (!oqs_lms_type_list_contains(w1) || !oqs_lmots_type_list_contains(w2)) {
-			return 0;
-		}
-
-		return levels;
-	}
-
-	if (oqs_lms_type_list_contains(w0) && oqs_lmots_type_list_contains(w1)) {
-		return 1;
-	}
-
-	return 0;
-}
 
 /*
  * Start the process of validating an HSS signature incrementally. Parameters:
@@ -113,34 +38,27 @@ bool hss_validate_signature_init(
                                        /* we got a failure */
 
     const unsigned char *orig_signature = signature;
-
-    /* Get the number of levels the signature claims.  The header parsed here
-     * is u32(levels-1) || u32(q) || u32(lm_ots), and is_hss_public_key()
-     * below reads the LM-OTS type at offset 8, so HSS_SIG_INC_HEADER_LEN
-     * bytes must be present */
-    if (signature_len < HSS_SIG_INC_HEADER_LEN) {
+;
+    /* Get the number of levels the signature claims */
+    if (signature_len < 4) {
         ctx->status = info->error_code = hss_error_bad_signature;
         return false;
     }
-    uint_fast32_t levels = (uint_fast32_t)get_bigendian( signature, 4 ) + 1;
+    uint_fast32_t levels = get_bigendian( signature, 4 ) + 1;
         /* +1 because what's in the signature is levels-1 */
-    uint_fast32_t pub_levels = public_key_levels(public_key, orig_signature, signature_len);
-    if (is_hss_public_key(public_key, orig_signature, signature_len)) {
-        public_key += 4;
-    }
     signature += 4; signature_len -= 4;
-
-    if (levels < MIN_HSS_LEVELS || levels > MAX_HSS_LEVELS ) {
+    if (levels < MIN_HSS_LEVELS || levels > MAX_HSS_LEVELS ||
+                               levels != get_bigendian( public_key, 4 )) {
         ctx->status = info->error_code = hss_error_bad_signature;
         return false;
     }
-
+    uint_fast32_t pub_levels = get_bigendian( public_key, 4 );
     if (levels != pub_levels) {
         /* Signature and public key don't agree */
         ctx->status = info->error_code = hss_error_bad_signature;
         return false;
     }
-
+    public_key += 4;
 
     /* Validate the upper levels of the signature */
     struct thread_collection *col = NULL;
@@ -152,11 +70,11 @@ bool hss_validate_signature_init(
 
         /* Scan through the signature, kicking off the tasks to validate it */
         /* as we go.  Note that we don't validate the bottom level yet */
-        for (i=0; i<levels-1; i++) {
+        for (i=0; i<levels-1; i++) { 
             /* The next thing is the signature of this public key */
-            param_set_t lm_type = (param_set_t)get_bigendian( public_key, 4 );
-            param_set_t lm_ots_type = (param_set_t)get_bigendian( public_key+4, 4 );
-            unsigned l_siglen = (unsigned)lm_get_signature_len(lm_type, lm_ots_type);
+            param_set_t lm_type = get_bigendian( public_key, 4 );
+            param_set_t lm_ots_type = get_bigendian( public_key+4, 4 );
+            unsigned l_siglen = lm_get_signature_len(lm_type, lm_ots_type);
             if (l_siglen == 0 || l_siglen > signature_len) goto failed;
             const unsigned char *l_sig = signature;
             signature += l_siglen; signature_len -= l_siglen;
@@ -164,8 +82,8 @@ bool hss_validate_signature_init(
             /* The next thing is the next level public key (which we need */
             /* to validate) */
             if (signature_len < 4) goto failed;
-            lm_type = (param_set_t)get_bigendian( signature, 4 );
-            unsigned l_pubkeylen = (unsigned)lm_get_public_key_len(lm_type);
+            lm_type = get_bigendian( signature, 4 );
+            unsigned l_pubkeylen = lm_get_public_key_len(lm_type);
             if (l_pubkeylen == 0 || l_pubkeylen > signature_len) goto failed;
             const unsigned char *l_pubkey = signature;
             signature += l_pubkeylen; signature_len -= l_pubkeylen;
@@ -204,18 +122,12 @@ bool hss_validate_signature_init(
     memcpy( ctx->final_public_key, public_key, 8 + I_LEN + MAX_HASH );
 
     /* Now, initialize the context */
-    param_set_t ots_type = (param_set_t)get_bigendian( public_key+4, 4 );
+    param_set_t ots_type = get_bigendian( public_key+4, 4 );
 
     unsigned h, n;
     if (!lm_ots_look_up_parameter_set(ots_type, &h, &n, NULL, NULL, NULL)) {
         /* Because we're checking in parallel, this may be caused by */
         /* a bad signature */
-        ctx->status = info->error_code = hss_error_bad_signature;
-        return false;
-    }
-    /* The bottom level signature starts with u32(q), and the LM-OTS
-     * randomizer C sits at offset 8 and is n bytes wide; both are read below */
-    if (signature_len < 8 + (size_t)n) {
         ctx->status = info->error_code = hss_error_bad_signature;
         return false;
     }

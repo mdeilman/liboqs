@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: MIT
 #if !defined( HSS_THREAD_H_ )
 #define HSS_THREAD_H_
 /*
@@ -30,7 +29,6 @@
  * by the time hss_thread_done returns
  */
 #include <stdlib.h>
-#include "lms_namespace.h"
 
 /* This is our abstract object that stands for a set of threads */
 struct thread_collection;

@@ -1,11 +1,9 @@
-// SPDX-License-Identifier: MIT
 #if !defined( HSS_SIGN_INC_H_ )
 #define HSS_SIGN_INC_H_
 #include <stdbool.h>
 #include <stddef.h>
 #include "hash.h"
 #include "common_defs.h"
-#include "lms_namespace.h"
 
 /*
  * These are the functions to sign a message incrementally.
@@ -17,7 +15,7 @@
  *    struct hss_sign_inc ctx;
  *    bool success = hss_sign_init( &ctx, working_key,
  *            update_private_key, private_key_context,
- *            signature, signature_buffer_len,
+ *            signature, signature_buffer_len, 
  *            &lsat_signature );
  *    hss_sign_update( &ctx, message_part_1, len_1 );
  *    hss_sign_update( &ctx, message_part_2, len_2 );
@@ -45,7 +43,7 @@ struct hss_sign_inc {
     merkle_index_t q;  /* The index of the bottom level signature */
     union hash_context hash_ctx; /* For the running hash we use */
 
-    unsigned char c[MAX_HASH];  /* The C value we used */
+    unsigned char c[MAX_HASH];  /* The C value we used */ 
 };
 
 struct hss_extra_info;

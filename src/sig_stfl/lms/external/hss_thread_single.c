@@ -1,6 +1,4 @@
-// SPDX-License-Identifier: MIT
 #include "hss_thread.h"
-#include "config.h"
 
 /*
  * This is a trivial implementation of our threading abstraction.
@@ -12,7 +10,6 @@
  * no threads, hence we don't need such an object
  */
 struct thread_collection *hss_thread_init(int num_thread) {
-    LMS_UNUSED(num_thread);
     return 0;
 }
 
@@ -24,7 +21,6 @@ void hss_thread_issue_work(struct thread_collection *collect,
             void (*function)(const void *detail,
                              struct thread_collection *col),
             const void *detail, size_t size_detail_structure) {
-    LMS_UNUSED(size_detail_structure);
         /* If we were asked to make sure something is done, just do it */
     function( detail, collect );
 }
@@ -35,7 +31,7 @@ void hss_thread_issue_work(struct thread_collection *collect,
  * requested, and we never allocated a collection object in the first place
  */
 void hss_thread_done(struct thread_collection *collect) {
-    LMS_UNUSED(collect);
+    ;
 }
 
 /*
@@ -44,14 +40,14 @@ void hss_thread_done(struct thread_collection *collect) {
  * there is no need to lock
  */
 void hss_thread_before_write(struct thread_collection *collect) {
-    LMS_UNUSED(collect);
+    ;
 }
 
 /*
  * This releases the above lock
  */
 void hss_thread_after_write(struct thread_collection *collect) {
-    LMS_UNUSED(collect);
+    ;
 }
 
 /*
@@ -59,6 +55,5 @@ void hss_thread_after_write(struct thread_collection *collect) {
  * (the main one)
  */
 unsigned hss_thread_num_tracks(int num_thread) {
-    LMS_UNUSED(num_thread);
     return 1;
 }

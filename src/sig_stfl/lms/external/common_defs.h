@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: MIT
 #if !defined( COMMON_DEFS_H_ )
 #define COMMON_DEFS_H_
 
@@ -9,8 +8,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <stddef.h>
-#include <oqs/oqs.h>
+
 #define MAX_HASH   32 /* Length of the largest hash we support */
 
 /* The I (Merkle tree identifier) value is 16 bytes long */
@@ -27,20 +25,8 @@
 #define MIN_HSS_LEVELS 1    /* Minumum levels we allow */
 #define MAX_HSS_LEVELS 8    /* Maximum levels we allow */
 
-/* RFC 8554 u32 field width in serialized HSS/LMS structures */
-#define HSS_U32_LEN 4
-
-/*
- * Incremental HSS signature prefix parsed by hss_validate_signature_init():
- *   u32(levels-1) || u32(q) || u32(lm_ots_type)
- */
-#define HSS_SIG_LEVELS_M1      0
-#define HSS_SIG_Q              (HSS_SIG_LEVELS_M1 + HSS_U32_LEN)
-#define HSS_SIG_LM_OTS         (HSS_SIG_Q + HSS_U32_LEN)
-#define HSS_SIG_INC_HEADER_LEN (HSS_SIG_LM_OTS + HSS_U32_LEN)
-
 /* This is the length of our internal seed values */
-#define SEED_LEN 32         /* Enough to make Grover's infeasible */
+#define MAX_SEED_LEN 32     /* Enough to make Grover's infeasible */
 
 /* Here are some internal types used within the code.  They are listed more */
 /* for documentation ("this is what this variable is expected to be") rather */
@@ -74,51 +60,41 @@ typedef uint_fast64_t sequence_t;
 #define LMS_SHA256_N32_H15 0x00000007
 #define LMS_SHA256_N32_H20 0x00000008
 #define LMS_SHA256_N32_H25 0x00000009
+#define LMS_SHA256_N24_H5  0x0000000a
+#define LMS_SHA256_N24_H10 0x0000000b
+#define LMS_SHA256_N24_H15 0x0000000c
+#define LMS_SHA256_N24_H20 0x0000000d
+#define LMS_SHA256_N24_H25 0x0000000e
+#define LMS_SHAKE256_N32_H5  0x0000000f
+#define LMS_SHAKE256_N32_H10 0x00000010
+#define LMS_SHAKE256_N32_H15 0x00000011
+#define LMS_SHAKE256_N32_H20 0x00000012
+#define LMS_SHAKE256_N32_H25 0x00000013
+#define LMS_SHAKE256_N24_H5  0x00000014
+#define LMS_SHAKE256_N24_H10 0x00000015
+#define LMS_SHAKE256_N24_H15 0x00000016
+#define LMS_SHAKE256_N24_H20 0x00000017
+#define LMS_SHAKE256_N24_H25 0x00000018
+
 
 /* LM-OTS registry */
 #define LMOTS_SHA256_N32_W1 0x00000001
 #define LMOTS_SHA256_N32_W2 0x00000002
 #define LMOTS_SHA256_N32_W4 0x00000003
 #define LMOTS_SHA256_N32_W8 0x00000004
+#define LMOTS_SHA256_N24_W1 0x00000005
+#define LMOTS_SHA256_N24_W2 0x00000006
+#define LMOTS_SHA256_N24_W4 0x00000007
+#define LMOTS_SHA256_N24_W8 0x00000008
+#define LMOTS_SHAKE256_N32_W1 0x00000009
+#define LMOTS_SHAKE256_N32_W2 0x0000000a
+#define LMOTS_SHAKE256_N32_W4 0x0000000b
+#define LMOTS_SHAKE256_N32_W8 0x0000000c
+#define LMOTS_SHAKE256_N24_W1 0x0000000d
+#define LMOTS_SHAKE256_N24_W2 0x0000000e
+#define LMOTS_SHAKE256_N24_W4 0x0000000f
+#define LMOTS_SHAKE256_N24_W8 0x00000010
 
-/* Supported LMS / LM-OTS parameter-set identifiers (must stay in sync with #defines above) */
-#define OQS_LMS_TYPE_LIST_LEN 5u
-#define OQS_LMOTS_TYPE_LIST_LEN 4u
-
-static const param_set_t OQS_LMS_TYPE_LIST[OQS_LMS_TYPE_LIST_LEN] = {
-	LMS_SHA256_N32_H5,
-	LMS_SHA256_N32_H10,
-	LMS_SHA256_N32_H15,
-	LMS_SHA256_N32_H20,
-	LMS_SHA256_N32_H25,
-};
-
-static const param_set_t OQS_LMOTS_TYPE_LIST[OQS_LMOTS_TYPE_LIST_LEN] = {
-	LMOTS_SHA256_N32_W1,
-	LMOTS_SHA256_N32_W2,
-	LMOTS_SHA256_N32_W4,
-	LMOTS_SHA256_N32_W8,
-};
-
-static inline bool oqs_lms_type_list_contains(param_set_t v) {
-	size_t i;
-	for (i = 0; i < OQS_LMS_TYPE_LIST_LEN; i++) {
-		if (OQS_LMS_TYPE_LIST[i] == v) {
-			return true;
-		}
-	}
-	return false;
-}
-
-static inline bool oqs_lmots_type_list_contains(param_set_t v) {
-	size_t i;
-	for (i = 0; i < OQS_LMOTS_TYPE_LIST_LEN; i++) {
-		if (OQS_LMOTS_TYPE_LIST[i] == v) {
-			return true;
-		}
-	}
-	return false;
-}
 
 /*
  * Internal formats of various hashes

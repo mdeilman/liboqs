@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: MIT
 #if !defined( HSS_VERIFY_INC_H_ )
 #define HSS_VERIFY_INC_H_
 #include <stdbool.h>
@@ -6,7 +5,6 @@
 #include "hash.h"
 #include "common_defs.h"
 #include "hss.h"
-#include "lms_namespace.h"
 
 /*
  * These are the functions to validate a signature incrementally.
@@ -72,7 +70,7 @@ bool hss_validate_signature_update(
 
 /* This finalizes the signature validation */
 /* This returns true if the signature validates (and we didn't detect any */
-/* intermediate failures) */
+/* intermediate failures) */ 
 /* We ask the caller to pass in the signature again, because we'd prefer */
 /* not having to place the final LMS signature in the ctx structure; that'd */
 /* make it larger than we'd like */

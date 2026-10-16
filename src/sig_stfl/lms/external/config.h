@@ -1,8 +1,5 @@
-// SPDX-License-Identifier: MIT
 #if !defined( CONFIG_H_ )
 #define CONFIG_H_
-
-#define LMS_UNUSED(x) (void)(x)
 
 /*
  * This file has #define's that specify how this package operates, and

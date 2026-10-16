@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: MIT
 /*
  * This is the code which allocates a working key (and initializes the fields
  * that are independent of the key)
@@ -9,6 +8,7 @@
 #include "hss.h"
 #include "hss_internal.h"
 #include "lm_common.h"
+#include "lm_ots_common.h"
 
 #define MALLOC_OVERHEAD  8   /* Our simplistic model about the overhead */
                              /* that malloc takes up is that it adds 8 */
@@ -132,9 +132,6 @@ int hss_smallest_subtree_size(int tree_height, int i, int n) {
      * These expirements were done with n=32; different n would likely
      * give other results
      */
-    LMS_UNUSED(tree_height);
-    LMS_UNUSED(i);
-    LMS_UNUSED(n);
 #if MIN_SUBTREE > 2
 #error We assume that a subtree of size 2 is allowed
 #endif
@@ -155,7 +152,7 @@ struct hss_working_key *allocate_working_key(
     struct hss_extra_info *info) {
     struct hss_extra_info temp_info = { 0 };
     if (!info) info = &temp_info;
-
+ 
     if (levels < MIN_HSS_LEVELS || levels > MAX_HSS_LEVELS) {
         info->error_code = hss_error_bad_param_set;
         return 0;
@@ -168,19 +165,19 @@ struct hss_working_key *allocate_working_key(
     if (memory_target > LONG_MAX) {
         mem_target = LONG_MAX;
     } else {
-        mem_target = (signed long)memory_target;
+        mem_target = memory_target;
     }
 #if 0
 signed long initial_mem_target = mem_target; /* DEBUG HACK */
 #endif
 
-    struct hss_working_key *w = OQS_MEM_malloc( sizeof *w );
+    struct hss_working_key *w = malloc( sizeof *w );
     if (!w) {
         info->error_code = hss_error_out_of_memory;
         return NULL;
     }
-    mem_target -= (signed long)sizeof(*w) + MALLOC_OVERHEAD;
-    unsigned i;
+    mem_target -= sizeof(*w) + MALLOC_OVERHEAD;
+    int i;
     w->levels = levels;
     w->status = hss_error_key_uninitialized; /* Not usable until we see a */
                                              /* private key */
@@ -215,23 +212,23 @@ signed long initial_mem_target = mem_target; /* DEBUG HACK */
 
         w->signed_pk_len[i] = w->siglen[i-1] + pklen;
 
-        w->signed_pk[i] = OQS_MEM_malloc( w->signed_pk_len[i] );
+        w->signed_pk[i] = malloc( w->signed_pk_len[i] );
         if (!w->signed_pk[i]) {
             hss_free_working_key(w);
             info->error_code = hss_error_out_of_memory;
             return 0;
         }
-        mem_target -= (signed long)w->signed_pk_len[i] + MALLOC_OVERHEAD;
+        mem_target -= w->signed_pk_len[i] + MALLOC_OVERHEAD;
     }
     w->signature_len = signature_len;
 
     /* Also account for the overhead for the stack allocation (the memory */
     /* used by the stack will be accounted as a part of the tree level size */
-     mem_target -= (signed long)MALLOC_OVERHEAD;
+     mem_target -= MALLOC_OVERHEAD;
 
     /*
      * Plot out how many subtree sizes we have at each level.  We start by
-     * computing how much memory we'd use if we minimize each level
+     * computing how much memory we'd use if we minimize each level 
      */
     unsigned subtree_size[MAX_HSS_LEVELS];
     unsigned subtree_levels[MAX_HSS_LEVELS];
@@ -306,7 +303,7 @@ signed long initial_mem_target = mem_target; /* DEBUG HACK */
                        level_height[i], hash_size[i], &subtree_levels[i],
                         &stack_used );
 
-        mem_target -= (signed long)mem;
+        mem_target -= mem;
         stack_usage += stack_used;
     }
 
@@ -328,8 +325,8 @@ signed long initial_mem_target = mem_target; /* DEBUG HACK */
         found_plenty_memory,      /* We found something that fits within */
                                   /* out budget */
     } search_status = nothing_yet;
-    unsigned long best_mem = 0;
-    unsigned long best_levels = 0;
+    size_t best_mem = 0;
+    signed long best_levels = 0;
     unsigned best_j = 0;
     size_t best_stack_used = 0;
     unsigned j;
@@ -362,7 +359,7 @@ signed long initial_mem_target = mem_target; /* DEBUG HACK */
             /* This is a signed type so that the comparison works as */
             /* expected if mem_target is negative */
         size_t stack_used;
-        signed long mem = (unsigned long)compute_level_memory_usage(i, j,
+        signed long mem = compute_level_memory_usage(i, j,
                        level_height[i], hash_size[i], &subtree_levels[i],
                        &stack_used );
             /* # of sublevels this would have */
@@ -381,7 +378,7 @@ signed long initial_mem_target = mem_target; /* DEBUG HACK */
             /* This would use more memory than we'd like; accept it if */
             /* either we have no solution, or it uses less memory than what */
             /* we've seen */
-            if (search_status != nothing_yet && mem > (signed long)best_mem) continue;
+            if (search_status != nothing_yet && mem > best_mem) continue;
 
             /* This solution is the best so far (however, it doesn't fit) */
             search_status = found_overbudget;
@@ -394,7 +391,7 @@ signed long initial_mem_target = mem_target; /* DEBUG HACK */
                     /* We've already seen a faster solution */
                     continue;
                 }
-                if (sub_levels == best_levels && mem > (signed long)best_mem) {
+                if (sub_levels == best_levels && mem > best_mem) {
                     /* We've already seen an equally fast solution that */
                     /* uses less memory */
                     continue;
@@ -430,7 +427,7 @@ printf( "Allocation = %ld\n", initial_mem_target - mem_target + best_mem ); /* D
         stack = NULL;   /* Hey!  No stack required */
                         /* Avoid the malloc, as malloc(0) is allowed to fail */
     } else {
-        stack = OQS_MEM_malloc(stack_usage);
+        stack = malloc(stack_usage);
         if (!stack) {
             hss_free_working_key(w);
             info->error_code = hss_error_out_of_memory;
@@ -445,8 +442,8 @@ printf( "Allocation = %ld\n", initial_mem_target - mem_target + best_mem ); /* D
      * allocations
      */
     for (i = 0; i<levels; i++) {
-        struct merkle_level *tree = OQS_MEM_malloc( sizeof *tree );
-        if (!tree) {
+        struct merkle_level *tree = malloc( sizeof *tree );
+        if (!tree) { 
             hss_free_working_key(w);
             info->error_code = hss_error_out_of_memory;
             return 0;
@@ -455,6 +452,8 @@ printf( "Allocation = %ld\n", initial_mem_target - mem_target + best_mem ); /* D
         tree->level = h0;
         tree->h = level_hash[i];
         tree->hash_size = hash_size[i];
+        lm_ots_look_up_parameter_set( lm_ots_type[i], &tree->lms_hash,
+                                      &tree->lms_hash_size, 0, 0, 0 );
         tree->lm_type = lm_type[i];
         tree->lm_ots_type = lm_ots_type[i];
         /* We'll initialize current_index from the private key */
@@ -484,7 +483,7 @@ printf( "Allocation = %ld\n", initial_mem_target - mem_target + best_mem ); /* D
                 /* 'next subtree' */
                 if (k == NEXT_TREE && i == 0) continue;
 
-                struct subtree *s = OQS_MEM_malloc( sizeof *s + hash_size[i] *
+                struct subtree *s = malloc( sizeof *s + hash_size[i] *
                                                (((size_t)2<<height)-1));
                 if (!s) {
                     hss_free_working_key(w);
@@ -542,15 +541,15 @@ void hss_free_working_key(struct hss_working_key *w) {
             unsigned j, k;
             for (j=0; j<MAX_SUBLEVELS; j++)
                 for (k=0; k<3; k++)
-                    OQS_MEM_insecure_free(tree->subtree[j][k]);
+                    free(tree->subtree[j][k]);
             hss_zeroize( tree, sizeof *tree ); /* We have seeds here */
         }
-        OQS_MEM_insecure_free(tree);
+        free(tree);
     }
     for (i=0; i<MAX_HSS_LEVELS-1; i++) {
-        OQS_MEM_insecure_free(w->signed_pk[i]);
+        free(w->signed_pk[i]);
     }
-    OQS_MEM_insecure_free(w->stack);
+    free(w->stack);
     hss_zeroize( w, sizeof *w ); /* We have secret information here */
-    OQS_MEM_insecure_free(w);
+    free(w);
 }

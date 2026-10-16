@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: MIT
 #include <stdlib.h>
 #include <string.h>
 #include "common_defs.h"
@@ -10,9 +9,7 @@
 #include "hss_thread.h"
 #include "lm_common.h"
 #include "lm_ots_common.h"
-#include <oqs/oqsconfig.h>
 
-#ifdef OQS_ALLOW_LMS_KEY_AND_SIG_GEN
 /* Count the number of 1 bits at the end (lsbits) of the integer */
 /* Do it in the obvious way; straightline code may be faster (no */
 /* unpredictable jumps, which are costly), but that would be less scrutable */
@@ -22,7 +19,6 @@ static int trailing_1_bits(merkle_index_t n) {
         ;
     return i;
 }
-#endif
 
 /*
  * This creates a private key (and the correspond public key, and optionally
@@ -54,7 +50,6 @@ static int trailing_1_bits(merkle_index_t n) {
  *
  * This returns true on success, false on failure
  */
-#ifdef OQS_ALLOW_LMS_KEY_AND_SIG_GEN
 bool hss_generate_private_key(
     bool (*generate_random)(void *output, size_t length),
     unsigned levels,
@@ -106,13 +101,13 @@ bool hss_generate_private_key(
         return false;
     }
 
-    unsigned len_ots_pub = (unsigned)lm_ots_get_public_key_len(lm_ots_type[0]);
+    unsigned len_ots_pub = lm_ots_get_public_key_len(lm_ots_type[0]);
     if (len_ots_pub == 0) {
         info->error_code = hss_error_bad_param_set;
         return false;
     }
 
-    unsigned char private_key[ PRIVATE_KEY_LEN ];
+    unsigned char private_key[ PRIVATE_KEY_LEN(MAX_SEED_LEN) ];
 
         /* First step: format the private key */
     put_bigendian( private_key + PRIVATE_KEY_INDEX, 0,
@@ -124,14 +119,15 @@ bool hss_generate_private_key(
         return false;
     }
     if (!(*generate_random)( private_key + PRIVATE_KEY_SEED,
-                   PRIVATE_KEY_SEED_LEN )) {
+                   PRIVATE_KEY_SEED_LEN(size_hash) )) {
         info->error_code = hss_error_bad_randomness;
         return false;
     }
 
         /* Now make sure that the private key is written to NVRAM */
     if (update_private_key) {
-        if (!(*update_private_key)( private_key, PRIVATE_KEY_LEN, context)) {
+        if (!(*update_private_key)( private_key, PRIVATE_KEY_LEN(size_hash),
+                                    context)) {
             /* initial write of private key didn't take */
             info->error_code = hss_error_private_key_write_failed;
             hss_zeroize( private_key, sizeof private_key );
@@ -144,7 +140,7 @@ bool hss_generate_private_key(
             hss_zeroize( private_key, sizeof private_key );
             return false;
         }
-        memcpy( context, private_key, PRIVATE_KEY_LEN );
+        memcpy( context, private_key, PRIVATE_KEY_LEN(size_hash) );
     }
 
     /* Figure out what would be the best trade-off for the aux level */
@@ -160,8 +156,9 @@ bool hss_generate_private_key(
     }
 
     unsigned char I[I_LEN];
-    unsigned char seed[SEED_LEN];
-    if (!hss_generate_root_seed_I_value( seed, I, private_key+PRIVATE_KEY_SEED)) {
+    unsigned char seed[MAX_SEED_LEN];
+    if (!hss_generate_root_seed_I_value( seed, I, private_key+PRIVATE_KEY_SEED,
+                                    lm_type[0], lm_ots_type[0])) {
         info->error_code = hss_error_internal;
         hss_zeroize( private_key, sizeof private_key );
         return false;
@@ -177,7 +174,7 @@ bool hss_generate_private_key(
     unsigned level;
     unsigned char *dest = 0;  /* The area we actually write to */
     void *temp_buffer = 0;  /* The buffer we need to free when done */
-    for (level = h0-1; level > 2; level--) {
+    for (level = h0-1; level > 1; level--) {
             /* If our bottom-most aux data is at this level, we want it */
         if (expanded_aux_data && expanded_aux_data->data[level]) {
                 /* Write directly into the aux area */
@@ -186,11 +183,11 @@ bool hss_generate_private_key(
         }
 
             /* If going to a higher levels would mean that we wouldn't */
-            /* effectively use all the cores we have, use this level */
-        if (((unsigned)1<<level) < 4*num_cores) {
+            /* effectively use all the cores we have, use this level */ 
+        if ((1<<level) < 4*num_cores) {
                 /* We'll write into a temp area; malloc the space */
             size_t temp_buffer_size = (size_t)size_hash << level;
-            temp_buffer = OQS_MEM_malloc(temp_buffer_size);
+            temp_buffer = malloc(temp_buffer_size);
             if (!temp_buffer) {
                 /* Couldn't malloc it; try again with s smaller buffer */
                 continue;
@@ -276,11 +273,11 @@ bool hss_generate_private_key(
         info->error_code = got_error;
         hss_zeroize( private_key, sizeof private_key );
         if (update_private_key) {
-            (void)(*update_private_key)(private_key, PRIVATE_KEY_LEN, context);
+            (void)(*update_private_key)(private_key, PRIVATE_KEY_LEN(size_hash), context);
         } else {
-            hss_zeroize( context, PRIVATE_KEY_LEN );
+            hss_zeroize( context, PRIVATE_KEY_LEN(size_hash) );
         }
-        OQS_MEM_insecure_free(temp_buffer);
+        free(temp_buffer);
         return false;
     }
 
@@ -304,7 +301,7 @@ bool hss_generate_private_key(
          * is the final piece, to where the caller specified
          */
         unsigned char *current_buf;
-        unsigned stack_offset = trailing_1_bits( leaf_node );
+        int stack_offset = trailing_1_bits( leaf_node );
         if (stack_offset == level) {
             current_buf = root_hash;
         } else {
@@ -350,17 +347,13 @@ bool hss_generate_private_key(
     public_key += I_LEN; len_public_key -= I_LEN;
     memcpy( public_key, root_hash, size_hash );
     public_key += size_hash; len_public_key -= size_hash;
-    /* Address static analysis issue*/
-    LMS_UNUSED(public_key);
-    LMS_UNUSED(len_public_key);
 
     /* Hey, what do you know -- it all worked! */
     hss_zeroize( private_key, sizeof private_key ); /* Zeroize local copy of */
                                                    /* the private key */
-    OQS_MEM_insecure_free(temp_buffer);
+    free(temp_buffer);
     return true;
 }
-#endif
 
 /*
  * The length of the private key
@@ -370,8 +363,11 @@ size_t hss_get_private_key_len(unsigned levels,
                    const param_set_t *lm_ots_type) {
        /* A private key is a 'public object'?  Yes, in the sense that we */
        /* export it outside this module */
-    LMS_UNUSED(levels);
-    LMS_UNUSED(lm_type);
-    LMS_UNUSED(lm_ots_type);
-    return PRIVATE_KEY_LEN;
+#if SECRET_METHOD == 2
+    unsigned hash0_len;
+    if (!lm_look_up_parameter_set( lm_type[0], 0, &hash0_len, 0 )) {
+        return 0;
+    }
+#endif
+    return PRIVATE_KEY_LEN(hash0_len);
 }

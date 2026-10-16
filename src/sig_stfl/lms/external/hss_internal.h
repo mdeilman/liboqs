@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: MIT
 #if !defined( HSS_INTERNAL_H_ )
 #define HSS_INTERNAL_H_
 
@@ -6,19 +5,26 @@
 #include "common_defs.h"
 #include "hss.h"
 #include "config.h"
-#include "lms_namespace.h"
 
 /*
  * This is the central internal include file for the functions that make up
  * this subsystem.  It should not be used by applications
  */
 
-#define PARAM_SET_COMPRESS_LEN 1  /* We assume that we can compress the */
+#define PARAM_SET_COMPRESS_LEN 2  /* We assume that we can compress the */
                                   /* lm_type and the lm_ots type for a */
-                                  /* single level into 1 byte */
+                                  /* single level into 2 bytes */
 
 #define PARM_SET_END 0xff   /* We set this marker in the parameter set */
                             /* when fewer than the maximum levels are used */
+
+/* This is the length of our internal seed values */
+#if SECRET_METHOD == 2
+#define MIN_SEED_LEN 24     /* Enough to make Grover's infeasible */
+#else
+#define MIN_SEED_LEN 32     /* Enough to make Grover's infeasible */
+#define SEED_LEN     32     /* It's always 32 */
+#endif
 
 
 /*
@@ -31,12 +37,12 @@
 #define PRIVATE_KEY_PARAM_SET_LEN (PARAM_SET_COMPRESS_LEN * MAX_HSS_LEVELS)
 #define PRIVATE_KEY_SEED (PRIVATE_KEY_PARAM_SET + PRIVATE_KEY_PARAM_SET_LEN)
 #if SECRET_METHOD == 2
-#define PRIVATE_KEY_SEED_LEN (SEED_LEN + I_LEN)
+#define PRIVATE_KEY_SEED_LEN(seed_len) (seed_len + I_LEN)
 #else
-#define PRIVATE_KEY_SEED_LEN SEED_LEN
+#define PRIVATE_KEY_SEED_LEN(seed_len) SEED_LEN
 #endif
-#define PRIVATE_KEY_LEN (PRIVATE_KEY_SEED + PRIVATE_KEY_SEED_LEN) /* That's */
-                                                                /* 48 bytes */
+#define PRIVATE_KEY_LEN(seed_len) (PRIVATE_KEY_SEED + \
+                    PRIVATE_KEY_SEED_LEN(seed_len)) /* That's 56-72 bytes */
 
 struct merkle_level;
 struct hss_working_key {
@@ -58,7 +64,7 @@ struct hss_working_key {
     unsigned char *stack;         /* The stack memory used by the subtrees */
 
         /* The private key (in its entirety) */
-    unsigned char private_key[PRIVATE_KEY_LEN];
+    unsigned char private_key[PRIVATE_KEY_LEN(MAX_SEED_LEN)];
         /* The pointer to the seed (contained within the private key) */
         /* Warning: nonsyntaxic macro; need to be careful how we use this */
 #define working_key_seed private_key + PRIVATE_KEY_SEED
@@ -85,11 +91,12 @@ struct hss_working_key {
 #error possibility we do not give the tree enough updates between signatures
 /* One possible fix would be to increase the subtree size for extremely */
 /* tall trees */
-#endif
+#endif 
 
 struct merkle_level {
     unsigned level;               /* Total number of levels */
     unsigned h, hash_size;        /* Hash function, width */
+    unsigned lms_hash, lms_hash_size; /* Hash function width for the LMS op */
     param_set_t lm_type;
     param_set_t lm_ots_type;      /* OTS parameter */
     merkle_index_t current_index; /* The number of signatures this tree has */
@@ -133,7 +140,7 @@ struct merkle_level {
     unsigned char I[I_LEN], I_next[I_LEN];
 
         /* The seed values for the current Merkle tree, and the next one */
-    unsigned char seed[SEED_LEN], seed_next[SEED_LEN];
+    unsigned char seed[MAX_SEED_LEN], seed_next[MAX_SEED_LEN];
 };
 
 /*
@@ -142,7 +149,7 @@ struct subtree {
     merkle_index_t current_index; /* For BUILDING_TREE, the number of OTS */
                                   /*  public key's we've generated so far */
                                   /* For NEXT_TREE, 0 if haven't started on */
-                                  /*  this subtree */
+                                  /*  this subtree */ 
                                   /*  MAX_SUBINDEX if we've finished it */
                                   /*  Else number of OTS public keys so far */
                                   /* For ACTIVE_TREE, unused; we'll use */
@@ -169,24 +176,33 @@ struct subtree {
 /* Internal function to compress a list of parameters into a short format */
 /* that we use internally */
 bool hss_compress_param_set( unsigned char *compressed,
-                   int levels,
+                   int levels, 
                    const param_set_t *lm_type,
                    const param_set_t *lm_ots_type,
                    size_t len_compressed );
+
+/* Internal function to extract the length of the level 0 LM hash from a */
+/* private key */
+int get_level0_lm_hash_len( const unsigned char *private_key );
 
 /* Internal function to generate the root seed, I value (based on the */
 /* private seed).  We do this (rather than selecting them  at random) so */
 /* that we don't need to store them in our private key; we can recompute */
 bool hss_generate_root_seed_I_value(unsigned char *seed, unsigned char *I,
-                   const unsigned char *master_seed);
+                   const unsigned char *master_seed,
+                   param_set_t lm, param_set_t ots);
 
 /* Internal function to generate the seed, I value for a child Merkle tree */
 /* (based on the seed, I value of the parent.  We do this (rather than */
 /* selecting them at random) so we have consistent values between reboots */
 bool hss_generate_child_seed_I_value( unsigned char *seed, unsigned char *I,
-                   const unsigned char *parent_seed,
-                   const unsigned char *parent_I, merkle_index_t index,
+                   const unsigned char *parent_seed, size_t parent_seed_len,
+                   const unsigned char *parent_I, size_t child_seed_len,
+                   merkle_index_t index,
                    param_set_t parent_lm, param_set_t parent_ots );
+
+/* Internal function to get the size of a seed */
+size_t hss_seed_size(param_set_t lm_param);
 
 /* Combine two internal nodes */
 void hss_combine_internal_nodes( unsigned char *dest,

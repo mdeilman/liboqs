@@ -1,11 +1,9 @@
-// SPDX-License-Identifier: MIT
 #if !defined(HSS_H_)
 #define HSS_H_
 
 #include <stdlib.h>
 #include <stddef.h>
 #include "common_defs.h"
-#include "lms_namespace.h"
 
 /*
  * This is intended to be a usable (nontoy) implementation of the LMS
@@ -264,10 +262,12 @@ bool hss_generate_working_key(
  * won't need to actually call the update function for the next N signatures
  * generated
  *
- * This can be useful if the update_private_key function is expensive.
+ * This can be useful if the update_private_key function is expensive, or if
+ * we happen to know if it will be off-line during the next N signatures.
  *
  * Note that if, N (or more) signatures are already reserved, this won't do
- * anything.
+ * anything.  And, if there aren't N more signatures available, this will
+ * fail.
  */
 bool hss_reserve_signature(
     struct hss_working_key *w,
@@ -299,7 +299,7 @@ bool hss_set_autoreserve(
 size_t hss_get_private_key_len(unsigned levels,
                    const param_set_t *lm_type,
                    const param_set_t *lm_ots_type);
-#define HSS_MAX_PRIVATE_KEY_LEN (8 + 8 + SEED_LEN + 16)
+#define HSS_MAX_PRIVATE_KEY_LEN (8 + 16 + MAX_SEED_LEN + 16)
 
 /*
  * This include file has the functions that contains the lengths of the other
@@ -331,7 +331,7 @@ size_t hss_get_aux_data_len(size_t max_length,
  * This is here to solve a chicken-and-egg problem: the hss_working_key
  * must be initialized to the same parameter set as the private key,
  * but (other than this function, or somehow remembering it) there's
- * no way to retreive the parameter set.
+ * no way to retrieve the parameter set.
  *
  * read_private_key/context will read the private key (if read_private_key is
  * NULL, context is assumed to point to the private key)
@@ -340,19 +340,20 @@ size_t hss_get_aux_data_len(size_t max_length,
  * and lm_ots_type[] will be set to the lm/ots parameter sets
  *
  * On success, this returns true; on failure (can't read the private key, or
- * the * private key is invalid), returns false
+ * the * private key is invalid), returns false 
  */
 bool hss_get_parameter_set( unsigned *levels,
                            param_set_t lm_type[ MAX_HSS_LEVELS ],
                            param_set_t lm_ots_type[ MAX_HSS_LEVELS ],
                            bool (*read_private_key)(unsigned char *private_key,
                                        size_t len_private_key, void *context),
-                           void *context);
+                           void *context,
+                           struct hss_extra_info *info);
 
 enum hss_error_code {
     hss_error_none = 0,      /* I don't know nothing about any error */
 
-    hss_range_normal_failures, /* There errors happen during normal use */
+    hss_range_normal_failures, /* These errors happen during normal use */
                              /* of the signature scheme */
     hss_error_bad_signature, /* Invalid signature */
     hss_error_private_key_expired, /* This private key has generated all */
@@ -381,9 +382,10 @@ enum hss_error_code {
                              /* properly */
     hss_error_ctx_already_used, /* The ctx has already been used */
     hss_error_bad_public_key, /* Somehow, we got an invalid public key */
+    hss_error_bad_private_key, /* Somehow, we got an invalid private key */
 
-    hss_range_processing_error, /* These errors are cause by an */
-                             /* error while processing */
+    hss_range_processing_error, /* These errors are caused by an */
+                             /* error detected by an external function */
     hss_error_bad_randomness, /* The RNG claimed failure */
     hss_error_private_key_write_failed, /* The write of the private key */
                              /* to NVRAM failed */

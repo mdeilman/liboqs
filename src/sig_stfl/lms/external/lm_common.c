@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: MIT
 /*
  * This is the code that implements the tree part of the LMS hash
  * based signatures
@@ -18,14 +17,44 @@ bool lm_look_up_parameter_set(param_set_t parameter_set,
     switch (parameter_set) {
     case LMS_SHA256_N32_H5:
         v_h = HASH_SHA256; v_n = 32; v_height = 5; break;
+    case LMS_SHA256_N24_H5:
+        v_h = HASH_SHA256_24; v_n = 24; v_height = 5; break;
     case LMS_SHA256_N32_H10:
         v_h = HASH_SHA256; v_n = 32; v_height = 10; break;
+    case LMS_SHA256_N24_H10:
+        v_h = HASH_SHA256_24; v_n = 24; v_height = 10; break;
     case LMS_SHA256_N32_H15:
         v_h = HASH_SHA256; v_n = 32; v_height = 15; break;
+    case LMS_SHA256_N24_H15:
+        v_h = HASH_SHA256_24; v_n = 24; v_height = 15; break;
     case LMS_SHA256_N32_H20:
         v_h = HASH_SHA256; v_n = 32; v_height = 20; break;
+    case LMS_SHA256_N24_H20:
+        v_h = HASH_SHA256_24; v_n = 24; v_height = 20; break;
     case LMS_SHA256_N32_H25:
         v_h = HASH_SHA256; v_n = 32; v_height = 25; break;
+    case LMS_SHA256_N24_H25:
+        v_h = HASH_SHA256_24; v_n = 24; v_height = 25; break;
+    case LMS_SHAKE256_N32_H5:
+        v_h = HASH_SHAKE256; v_n = 32; v_height = 5; break;
+    case LMS_SHAKE256_N24_H5:
+        v_h = HASH_SHAKE256_24; v_n = 24; v_height = 5; break;
+    case LMS_SHAKE256_N32_H10:
+        v_h = HASH_SHAKE256; v_n = 32; v_height = 10; break;
+    case LMS_SHAKE256_N24_H10:
+        v_h = HASH_SHAKE256_24; v_n = 24; v_height = 10; break;
+    case LMS_SHAKE256_N32_H15:
+        v_h = HASH_SHAKE256; v_n = 32; v_height = 15; break;
+    case LMS_SHAKE256_N24_H15:
+        v_h = HASH_SHAKE256_24; v_n = 24; v_height = 15; break;
+    case LMS_SHAKE256_N32_H20:
+        v_h = HASH_SHAKE256; v_n = 32; v_height = 20; break;
+    case LMS_SHAKE256_N24_H20:
+        v_h = HASH_SHAKE256_24; v_n = 24; v_height = 20; break;
+    case LMS_SHAKE256_N32_H25:
+        v_h = HASH_SHAKE256; v_n = 32; v_height = 25; break;
+    case LMS_SHAKE256_N24_H25:
+        v_h = HASH_SHAKE256_24; v_n = 24; v_height = 25; break;
     default: return false;
     }
 
@@ -67,10 +96,10 @@ size_t lm_get_signature_len(param_set_t lm_type,
     if (!lm_look_up_parameter_set( lm_type, 0, &n, &height ))
         return 0;
 
-    int ots_sig_len = (int)lm_ots_get_signature_len(lm_ots_type);
+    int ots_sig_len = lm_ots_get_signature_len(lm_ots_type);
     if (ots_sig_len == 0)
         return 0;
-
+ 
     /*
      * The LM signature consists of the type code, the diversification factor,
      * the LM-OTS signature (which includes the OTS type code), and the

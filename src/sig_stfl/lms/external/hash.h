@@ -1,10 +1,9 @@
-// SPDX-License-Identifier: MIT
 #if !defined( HASH_H__ )
 #define HASH_H__
-#include <oqs/sha2.h>
+#include "sha256.h"
+#include "fips202.h"
 #include <stddef.h>
 #include <stdbool.h>
-#include "lms_namespace.h"
 
 /*
  * This defines the hash interface used within HSS.
@@ -17,10 +16,14 @@
  */
 enum {
     HASH_SHA256 = 1,    /* SHA256 */
+    HASH_SHA256_24 = 2, /* SHA256 truncated to 24 bytes */
+    HASH_SHAKE256 = 3,  /* SHAKE256 */
+    HASH_SHAKE256_24 = 4, /* SHAKE256 truncated to 24 bytes */
 };
 
 union hash_context {
-    OQS_SHA2_sha256_ctx sha256;
+    SHA256_CTX sha256;
+    keccak_state shake256;
     /* Any other hash contexts would go here */
 };
 
@@ -55,6 +58,5 @@ void hss_update_hash_context( int h, union hash_context *ctx,
                           const void *msg, size_t len_msg );
 void hss_finalize_hash_context( int h, union hash_context *ctx,
                           void *buffer);
-void SHA256_Final(unsigned char *output, OQS_SHA2_sha256_ctx *ctx);
 
 #endif /* HASH_H__  */

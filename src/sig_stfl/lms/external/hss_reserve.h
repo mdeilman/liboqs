@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: MIT
 #if !defined( HSS_RESERVE_H_ )
 #define HSS_RESERVE_H_
 
@@ -8,7 +7,6 @@
  */
 
 #include "common_defs.h"
-#include "lms_namespace.h"
 
 struct hss_working_key;
 

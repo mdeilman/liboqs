@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: MIT
 /*
  * This is the code that implements the tree part of the LMS hash
  * based signatures
@@ -37,8 +36,8 @@ bool lm_validate_signature(
     const unsigned char *signature, size_t signature_len) {
     union hash_context ctx;
 
-    param_set_t lm_type = (param_set_t)get_bigendian( public_key + LM_PUB_PARM_SET, 4 );
-    param_set_t ots_type = (param_set_t)get_bigendian( public_key + LM_PUB_OTS_PARM_SET, 4 );
+    param_set_t lm_type = get_bigendian( public_key + LM_PUB_PARM_SET, 4 );
+    param_set_t ots_type = get_bigendian( public_key + LM_PUB_OTS_PARM_SET, 4 );
 
     unsigned h, n, height;
     if (!lm_look_up_parameter_set(lm_type, &h, &n, &height)) return false;
@@ -48,12 +47,12 @@ bool lm_validate_signature(
     const unsigned char *I = public_key + LM_PUB_I;
 
     if (signature_len < 8) return false;
-    merkle_index_t count = (param_set_t)get_bigendian( signature, 4 );
+    merkle_index_t count = get_bigendian( signature, 4 );
     signature += 4; signature_len -= 4;  /* 4 bytes, rather then 8 */
         /*  the OTS type is expected to be a part of the OTS signature, */
         /* which lm_ots_validate_signature_compute will expect */
-
-    /* Compute the OTS root */
+   
+    /* Compute the OTS root */ 
     size_t ots_publen = lm_ots_get_public_key_len(ots_type);
     size_t ots_siglen = lm_ots_get_signature_len(ots_type);
     if (ots_publen == 0 || ots_siglen == 0) return false;
@@ -62,13 +61,13 @@ bool lm_validate_signature(
     unsigned char ots_sig[LEAF_MAX_LEN];
     if (!lm_ots_validate_signature_compute(ots_sig + LEAF_PK, I, count,
                   message, message_len, prehashed,
-                  signature, ots_siglen, ots_type)) return false;
+                  signature, ots_siglen, ots_type)) return false; 
     signature += ots_siglen; signature_len -= ots_siglen;
 
     /* Get the parameter set declared in the sigature; make sure it matches */
     /* what we expect */
     if (signature_len < 4) return false;
-    param_set_t parameter_set = (param_set_t)get_bigendian( signature, 4 );
+    param_set_t parameter_set = get_bigendian( signature, 4 );
     if (parameter_set != lm_type) return false;
     signature += 4; signature_len -= 4;
 
@@ -82,7 +81,7 @@ bool lm_validate_signature(
     memcpy( ots_sig + LEAF_I, I, I_LEN );
     put_bigendian( ots_sig + LEAF_R, node_num, 4 );
     SET_D( ots_sig + LEAF_D, D_LEAF );
-    hss_hash_ctx( computed_public_key, h, &ctx, ots_sig, LEAF_LEN(n) );
+    hss_hash_ctx( computed_public_key, h, &ctx, ots_sig, LEAF_LEN(ots_publen) );
 
     unsigned char prehash[ INTR_MAX_LEN ];
     memcpy( prehash + INTR_I, I, I_LEN );

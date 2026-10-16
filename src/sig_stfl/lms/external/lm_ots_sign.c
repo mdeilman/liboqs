@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: MIT
 /*
  * This is the code that implements the one-time-signature part of the LMS hash
  * based signatures
@@ -22,7 +21,6 @@ bool lm_ots_generate_public_key(
 
     /* Look up the parameter set */
     unsigned h, n, w, p, ls;
-    LMS_UNUSED(public_key_len);
     if (!lm_ots_look_up_parameter_set( lm_ots_type, &h, &n, &w, &p, &ls ))
         return false;
 
@@ -43,7 +41,7 @@ bool lm_ots_generate_public_key(
     /* signing operations; it would make sense to attempt to try to take */
     /* advantage of parallel (SIMD) hardware; even if we use it nowhere */
     /* else, we'd get a significant speed up */
-    unsigned i, j;
+    int i, j;
 
     unsigned char buf[ ITER_MAX_LEN ];
     memcpy( buf + ITER_I, I, I_LEN );
@@ -53,10 +51,10 @@ bool lm_ots_generate_public_key(
     hss_seed_derive_set_j( seed, 0 );
 
     for (i=0; i<p; i++) {
-        hss_seed_derive( buf + ITER_PREV, seed, i < p-1 );
+        hss_seed_derive( buf + ITER_PREV, n, seed, i < p-1 );
         put_bigendian( buf + ITER_K, i, 2 );
         /* We'll place j in the buffer below */
-        for (j=0; j < (unsigned)(1<<w) - 1; j++) {
+        for (j=0; j < (1<<w) - 1; j++) {
             buf[ITER_J] = j;
 
             hss_hash_ctx( buf + ITER_PREV, h, &ctx, buf, ITER_LEN(n) );
@@ -73,19 +71,15 @@ bool lm_ots_generate_public_key(
     return true;
 }
 
-/*
+/*  
  * This generates the randomizer C.  We assume seed has been initialized to
  * the expected q value
  */
 void lm_ots_generate_randomizer(unsigned char *c, unsigned n,
                                 struct seed_derive *seed) {
-    unsigned char randomizer[ SEED_LEN ];
-
     hss_seed_derive_set_j( seed, SEED_RANDOMIZER_INDEX );
 
-    hss_seed_derive( randomizer, seed, false );
-
-    memcpy( c, randomizer, n );
+    hss_seed_derive( c, n, seed, false );
 }
 
 
@@ -115,7 +109,7 @@ bool lm_ots_generate_signature(
      * the randomizer for a particualr index is the same
      * Also, if we're prehashed, we assume the caller has already selected it,
      * and placed it into the siganture */
-
+    
     if (!prehashed) {
         lm_ots_generate_randomizer( signature+4, n, seed);
     }
@@ -143,17 +137,17 @@ bool lm_ots_generate_signature(
     /* Append the checksum to the randomized hash */
     put_bigendian( &Q[n], lm_ots_compute_checksum(Q, n, w, ls), 2 );
 
-    unsigned i;
+    int i;
     unsigned char tmp[ITER_MAX_LEN];
 
     /* Preset the parts of tmp that don't change */
     memcpy( tmp + ITER_I, I, I_LEN );
     put_bigendian( tmp + ITER_Q, q, 4 );
-
+    
     hss_seed_derive_set_j( seed, 0 );
     for (i=0; i<p; i++) {
         put_bigendian( tmp + ITER_K, i, 2 );
-        hss_seed_derive( tmp + ITER_PREV, seed, i<p-1 );
+        hss_seed_derive( tmp + ITER_PREV, n, seed, i<p-1 );
         unsigned a = lm_ots_coef( Q, i, w );
         unsigned j;
         for (j=0; j<a; j++) {

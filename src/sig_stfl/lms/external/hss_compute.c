@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: MIT
 /*
  * This includes some computation methods that are shared between different
  * subsystems of the HSS signature package
@@ -29,7 +28,7 @@ static int trailing_1_bits(merkle_index_t n) {
  * Compute the value of an internal node within a Merkle tree
  */
 static enum hss_error_code hss_compute_internal_node( unsigned char *dest,
-                            merkle_index_t node_num,
+                            merkle_index_t node_num, 
                             const unsigned char *seed,
                             param_set_t lm_type,
                             param_set_t lm_ots_type,
@@ -43,7 +42,7 @@ static enum hss_error_code hss_compute_internal_node( unsigned char *dest,
 
     merkle_index_t tree_size = (merkle_index_t)1 << leaf_level;
     merkle_index_t r = node_num;
-    int levels_to_bottom = 0;
+    unsigned levels_to_bottom = 0;
     if (r == 0) return hss_error_internal;  /* So no to infinite loops */
     while (r < tree_size) {
         r <<= 1;
@@ -52,14 +51,14 @@ static enum hss_error_code hss_compute_internal_node( unsigned char *dest,
     merkle_index_t q = r - tree_size;
 
     merkle_index_t i;
-    unsigned ots_len = (unsigned)lm_ots_get_public_key_len(lm_ots_type);
+    unsigned ots_len = lm_ots_get_public_key_len(lm_ots_type);
     unsigned char pub_key[ LEAF_MAX_LEN ];
     memcpy( pub_key + LEAF_I, I, I_LEN );
     SET_D( pub_key + LEAF_D, D_LEAF );
 
     struct seed_derive derive;
     if (!hss_seed_derive_init( &derive, lm_type, lm_ots_type,
-                               I, seed)) {
+                               I, seed, hss_seed_size(lm_type))) {
         return hss_error_bad_param_set;
     }
 
@@ -88,11 +87,11 @@ static enum hss_error_code hss_compute_internal_node( unsigned char *dest,
         /* Hash it to form the leaf node */
         put_bigendian( pub_key + LEAF_R, r, 4);
         union hash_context ctx;
-        hss_hash_ctx( current_buf, h, &ctx, pub_key, LEAF_LEN(hash_size) );
+        hss_hash_ctx( current_buf, h, &ctx, pub_key, LEAF_LEN(ots_len) );
 
         /* Work up the stack, combining right nodes with the left nodes */
         /* that we've already computed */
-        int sp;
+        unsigned sp;
         for (sp = 1; sp <= stack_offset; sp++) {
             hss_combine_internal_nodes( current_buf,
                             &stack[(sp-1) * hash_size], current_buf,
@@ -121,7 +120,7 @@ static enum hss_error_code hss_compute_internal_node( unsigned char *dest,
 
 /*
  * Combine adjacent left and right nodes within the Merkle tree
- * together
+ * together 
  */
 void hss_combine_internal_nodes( unsigned char *dest,
         const unsigned char *left_node, const unsigned char *right_node,
@@ -151,7 +150,7 @@ void hss_gen_intermediate_tree(const void *data,
     for (i=0; i<d->node_count; i++) {
         unsigned char result[ MAX_HASH ];
         enum hss_error_code status = hss_compute_internal_node( result,
-                            d->node_num + i,
+                            d->node_num + i, 
                             d->seed,
                             d->lm_type,
                             d->lm_ots_type,

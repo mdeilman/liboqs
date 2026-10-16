@@ -1,10 +1,8 @@
-// SPDX-License-Identifier: MIT
 #if !defined(LM_COMMON_H_)
 #define LM_COMMON_H_
 
 #include <stddef.h>
 #include "common_defs.h"
-#include "lms_namespace.h"
 
 size_t lm_get_public_key_len(param_set_t lm_type);
 size_t lm_get_signature_len(param_set_t lm_type,

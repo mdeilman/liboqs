@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: MIT
 /*
  * This is the code that implements the one-time-signature part of the LMS hash
  * based signatures
@@ -39,7 +38,7 @@ bool lm_ots_validate_signature_compute(
     if (signature_len < 4) return false;  /* Ha, ha, very funny... */
 
     /* We don't trust the parameter set that's in the signature; verify it */
-    param_set_t parameter_set = (param_set_t)get_bigendian( signature, 4 );
+    param_set_t parameter_set = get_bigendian( signature, 4 );
     if (parameter_set != expected_parameter_set) {
         return false;
     }
@@ -79,7 +78,7 @@ bool lm_ots_validate_signature_compute(
     put_bigendian( &Q[n], lm_ots_compute_checksum(Q, n, w, ls), 2 );
 
     /* And, start building the parts for the final hash */
-    union hash_context final_ctx;
+    union hash_context final_ctx; 
     hss_init_hash_context(h, &final_ctx);
     {
         unsigned char prehash_prefix[ PBLC_PREFIX_LEN ];
@@ -90,7 +89,7 @@ bool lm_ots_validate_signature_compute(
                                 PBLC_PREFIX_LEN );
     }
 
-    unsigned i;
+    int i;
     unsigned char tmp[ITER_MAX_LEN];
 
     /* Preset the parts of tmp that don't change */

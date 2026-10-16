@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: MIT
 #if !defined( HSS_AUX_H_ )
 #define HSS_AUX_H_
 
@@ -10,7 +9,6 @@
 #include "common_defs.h"
 #include <stdlib.h>
 #include <stdint.h>
-#include "lms_namespace.h"
 
 struct hss_working_key;
 
@@ -40,7 +38,7 @@ struct expanded_aux_data *hss_expand_aux_data( const unsigned char *aux_data,
 
 /*
  * Save the marker within the aux data
- */
+ */ 
 void hss_store_aux_marker( unsigned char *aux_data, aux_level_t aux_level );
 
 /* Save an intermediate node */

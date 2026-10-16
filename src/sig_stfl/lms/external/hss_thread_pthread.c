@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: MIT
 #include "hss_thread.h"
 
 #include <pthread.h>
@@ -85,25 +84,25 @@ struct thread_collection *hss_thread_init(int num_thread) {
                                     /* single threaded */
     if (num_thread > MAX_THREAD) num_thread = MAX_THREAD;
 
-    struct thread_collection *col = OQS_MEM_malloc( sizeof *col );
+    struct thread_collection *col = malloc( sizeof *col );
     if (!col) return 0;  /* On malloc failure, run single threaded */
 
     col->num_thread = num_thread;
 
     if (0 != pthread_mutex_init( &col->lock, 0 )) {
-        OQS_MEM_insecure_free(col);
+        free(col);
         return 0;
     }
 
     if (0 != pthread_mutex_init( &col->write_lock, 0 )) {
         pthread_mutex_destroy( &col->lock );
-        OQS_MEM_insecure_free(col);
+        free(col);
         return 0;
     }
 
     col->current_ptr = 0;
     col->num_alive = 0;
-    int i;
+    unsigned i;
     for (i=0; i<num_thread; i++) {
         col->threads[i].state = never_was;
     }
@@ -126,7 +125,7 @@ static void *worker_thread( void *arg ) {
         (w->function)(w->x.detail, col);
 
         /* Ok, we did that */
-        OQS_MEM_insecure_free(w);
+        free(w);
 
         /* Check if there's anything else to do */
         pthread_mutex_lock( &col->lock );
@@ -172,7 +171,7 @@ void hss_thread_issue_work(struct thread_collection *col,
     size_t extra_space;
     if (size_detail_structure < MIN_DETAIL) extra_space = 0;
     else extra_space = size_detail_structure - MIN_DETAIL;
-    struct work_item *w = OQS_MEM_malloc(sizeof *w + extra_space);
+    struct work_item *w = malloc(sizeof *w + extra_space);
 
     if (!w) {
         /* Can't allocate the work structure; fall back to single-threaded */
@@ -219,7 +218,7 @@ void hss_thread_issue_work(struct thread_collection *col,
                     /* Hmmm, couldn't spawn it; fall back */
                     default: /* On error condition */
                     pthread_mutex_unlock( &col->lock );
-                    OQS_MEM_insecure_free(w);
+                    free(w);
                     function( detail, col );
                     return;
                 }
@@ -277,7 +276,7 @@ void hss_thread_done(struct thread_collection *col) {
 
     pthread_mutex_destroy( &col->lock );
     pthread_mutex_destroy( &col->write_lock );
-    OQS_MEM_insecure_free(col);
+    free(col);
 }
 
 void hss_thread_before_write(struct thread_collection *col) {
@@ -289,7 +288,7 @@ void hss_thread_after_write(struct thread_collection *col) {
     if (!col) return;
     pthread_mutex_unlock( &col->write_lock );
 }
-
+    
 
 unsigned hss_thread_num_tracks(int num_thread) {
     if (num_thread == 0) num_thread = DEFAULT_THREAD;
